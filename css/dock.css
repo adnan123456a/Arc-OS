@@ -1,0 +1,32 @@
+/* ═══════════════════════════════════════
+   ArcOS — Dock CSS
+═══════════════════════════════════════ */
+
+#dock {
+  position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: flex-end; gap: 5px;
+  background: rgba(14,14,28,.85);
+  backdrop-filter: blur(32px);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 8px 12px;
+  z-index: 9998;
+  box-shadow: 0 8px 40px rgba(0,0,0,.5);
+}
+.dock-icon {
+  width: 48px; height: 48px;
+  border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative;
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), filter .15s;
+  flex-shrink: 0; overflow: hidden;
+}
+.dock-icon:hover { transform: translateY(-10px) scale(1.18); }
+.dock-icon img, .dock-icon svg { width: 34px; height: 34px; object-fit: contain; }
+.dock-icon.active::after {
+  content: ''; position: absolute; bottom: -5px; left: 50%;
+  transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--accent);
+}
+.dock-sep { width: 1px; height: 28px; background: var(--border); margin: 0 4px; align-self: center; }

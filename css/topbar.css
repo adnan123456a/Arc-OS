@@ -1,0 +1,37 @@
+/* ═══════════════════════════════════════
+   ArcOS — Top Bar CSS
+═══════════════════════════════════════ */
+
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 36px;
+  background: var(--panel);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 14px;
+  z-index: 9999; font-size: 13px;
+}
+#activities-btn {
+  display: flex; align-items: center; gap: 7px;
+  background: transparent; border: none; color: var(--text);
+  padding: 4px 10px; border-radius: 8px;
+  cursor: pointer; font-size: 13px; font-family: inherit;
+  transition: background .2s; font-weight: 600;
+}
+#activities-btn:hover { background: rgba(94,129,244,.25); }
+#topbar-right { display: flex; align-items: center; gap: 12px; }
+.tray-icon {
+  cursor: pointer; opacity: .75;
+  transition: opacity .2s;
+  display: flex; align-items: center;
+}
+.tray-icon:hover { opacity: 1; }
+#clock-display { font-weight: 600; font-size: 13px; letter-spacing: .3px; }
+#profile-pic {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #5e81f4, #c77dff);
+  border: 2px solid rgba(94,129,244,.6);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; overflow: hidden;
+}

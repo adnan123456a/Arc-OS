@@ -5,282 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ArcOS — Browser Linux Desktop</title>
 <link href="https://fonts.googleapis.com/css2?family=Cantarell:wght@400;700&family=Source+Code+Pro:wght@400;600&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#0f0f1a;--panel:rgba(18,18,32,0.94);--card:rgba(255,255,255,0.055);
-  --card-hover:rgba(255,255,255,0.095);--accent:#5e81f4;--accent2:#c77dff;
-  --accent3:#48cfad;--text:#e8e8f0;--text-dim:rgba(232,232,240,0.5);
-  --border:rgba(255,255,255,0.08);--win-bar:rgba(22,22,38,0.99);
-  --red:#ff6b6b;--yellow:#ffd93d;--green:#6bcb77;--radius:14px;
-  --shadow:0 24px 70px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.06);
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Cantarell','Nunito',sans-serif;background:var(--bg);color:var(--text);height:100vh;width:100vw;overflow:hidden;user-select:none;}
-
-/* WALLPAPER */
-#wallpaper{position:fixed;inset:0;z-index:0;
-  background:radial-gradient(ellipse 80% 60% at 15% 55%,rgba(94,129,244,.18) 0,transparent 60%),
-  radial-gradient(ellipse 60% 50% at 85% 15%,rgba(199,125,255,.16) 0,transparent 55%),
-  radial-gradient(ellipse 50% 40% at 55% 85%,rgba(72,207,173,.12) 0,transparent 50%),
-  linear-gradient(150deg,#07071a 0%,#0d0d1e 35%,#121228 65%,#0a1a35 100%);}
-#wallpaper::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.08) 1px,transparent 1px);background-size:40px 40px;opacity:0.18;}
-
-/* TOP BAR */
-#topbar{position:fixed;top:0;left:0;right:0;height:36px;background:var(--panel);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:9999;font-size:13px;}
-#activities-btn{display:flex;align-items:center;gap:7px;background:transparent;border:none;color:var(--text);padding:4px 10px;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;transition:background .2s;font-weight:600;}
-#activities-btn:hover{background:rgba(94,129,244,.25);}
-#topbar-right{display:flex;align-items:center;gap:12px;}
-.tray-icon{cursor:pointer;opacity:.75;transition:opacity .2s;display:flex;align-items:center;}
-.tray-icon:hover{opacity:1;}
-#clock-display{font-weight:600;font-size:13px;letter-spacing:.3px;}
-#profile-pic{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#5e81f4,#c77dff);border:2px solid rgba(94,129,244,.6);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;overflow:hidden;}
-
-/* DOCK */
-#dock{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;align-items:flex-end;gap:5px;background:rgba(14,14,28,.85);backdrop-filter:blur(32px);border:1px solid var(--border);border-radius:22px;padding:8px 12px;z-index:9998;box-shadow:0 8px 40px rgba(0,0,0,.5);}
-.dock-icon{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:transform .18s cubic-bezier(.34,1.56,.64,1),filter .15s;flex-shrink:0;overflow:hidden;}
-.dock-icon:hover{transform:translateY(-10px) scale(1.18);}
-.dock-icon img,.dock-icon svg{width:34px;height:34px;object-fit:contain;}
-.dock-icon.active::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--accent);}
-.dock-sep{width:1px;height:28px;background:var(--border);margin:0 4px;align-self:center;}
-
-/* OVERVIEW */
-#overview{position:fixed;inset:0;z-index:9000;background:rgba(7,7,22,.88);backdrop-filter:blur(44px);display:none;flex-direction:column;align-items:center;padding-top:56px;animation:fadeIn .22s ease;}
-#overview.active{display:flex;}
-#overview-search{width:400px;padding:13px 20px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:14px;color:var(--text);font-size:15px;font-family:inherit;outline:none;margin-bottom:36px;transition:border .2s,background .2s;}
-#overview-search:focus{border-color:var(--accent);background:rgba(94,129,244,.08);}
-#overview-search::placeholder{color:var(--text-dim);}
-#app-grid{display:grid;grid-template-columns:repeat(7,96px);gap:16px;max-width:760px;}
-.app-icon{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;padding:10px;border-radius:16px;transition:background .15s,transform .15s;}
-.app-icon:hover{background:rgba(255,255,255,.09);transform:scale(1.05);}
-.app-icon-img{width:58px;height:58px;border-radius:15px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);overflow:hidden;}
-.app-icon-img img,.app-icon-img svg{width:38px;height:38px;object-fit:contain;}
-.app-icon-label{font-size:11px;text-align:center;color:var(--text);line-height:1.2;font-weight:500;}
-
-/* WINDOWS */
-.window{position:fixed;border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;min-width:300px;min-height:200px;z-index:1000;overflow:hidden;border:1px solid var(--border);animation:winOpen .18s cubic-bezier(.34,1.56,.64,1);}
-@keyframes winOpen{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
-.window-bar{height:40px;background:var(--win-bar);display:flex;align-items:center;padding:0 14px;cursor:move;flex-shrink:0;gap:8px;border-bottom:1px solid var(--border);}
-.win-btn{width:13px;height:13px;border-radius:50%;border:none;cursor:pointer;flex-shrink:0;transition:filter .15s;}
-.win-btn:hover{filter:brightness(1.3);}
-.win-close{background:#ff5f57;}.win-min{background:#febc2e;}.win-max{background:#28c840;}
-.win-title{flex:1;text-align:center;font-size:12.5px;font-weight:600;color:var(--text-dim);margin-right:39px;display:flex;align-items:center;justify-content:center;gap:6px;}
-.win-title-icon{width:16px;height:16px;object-fit:contain;}
-.window-content{flex:1;overflow:auto;background:#11111e;}
-
-/* TERMINAL */
-#terminal-content{background:#0b0b16;padding:14px;height:100%;font-family:'Source Code Pro',monospace;font-size:13px;overflow-y:auto;}
-.term-line{color:#a8ff78;margin-bottom:2px;line-height:1.65;}
-.term-line.err{color:#ff6b6b;}.term-line.info{color:#5e81f4;}.term-line.warn{color:#ffd93d;}
-#term-input-row{display:flex;align-items:center;gap:4px;margin-top:6px;}
-#term-prompt{color:#5e81f4;white-space:nowrap;font-family:'Source Code Pro',monospace;font-size:13px;}
-#term-input{background:transparent;border:none;color:#a8ff78;font-family:'Source Code Pro',monospace;font-size:13px;flex:1;outline:none;caret-color:#a8ff78;}
-
-/* EDITOR */
-#editor-content{height:100%;display:flex;flex-direction:column;background:#111120;}
-#editor-toolbar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--win-bar);border-bottom:1px solid var(--border);flex-wrap:wrap;}
-.editor-btn{padding:4px 10px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:7px;cursor:pointer;font-size:12px;font-family:inherit;transition:background .15s;}
-.editor-btn:hover{background:var(--accent);border-color:var(--accent);}
-#editor-filename{flex:1;background:transparent;border:none;color:var(--text-dim);font-size:12px;font-family:inherit;outline:none;min-width:80px;}
-#text-area{flex:1;padding:16px;background:transparent;border:none;color:var(--text);font-family:'Source Code Pro',monospace;font-size:13.5px;resize:none;outline:none;line-height:1.75;}
-#editor-status{padding:4px 12px;background:var(--win-bar);border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);display:flex;gap:16px;}
-.settings-select{background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-size:12px;outline:none;}
-
-/* CODE */
-#code-content{display:flex;flex-direction:column;height:100%;background:#0b0b16;}
-#code-toolbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--win-bar);border-bottom:1px solid var(--border);flex-wrap:wrap;}
-#code-area-wrap{flex:1;display:flex;min-height:0;}
-#line-nums{padding:14px 8px;background:rgba(0,0,0,.3);color:var(--text-dim);font-family:'Source Code Pro',monospace;font-size:13px;text-align:right;border-right:1px solid var(--border);user-select:none;min-width:40px;line-height:1.7;overflow:hidden;}
-#code-area{flex:1;padding:14px;background:transparent;border:none;color:#cdd6f4;font-family:'Source Code Pro',monospace;font-size:13px;resize:none;outline:none;line-height:1.7;overflow-y:auto;tab-size:2;}
-#code-output{height:120px;background:#09090f;border-top:1px solid var(--border);padding:10px 14px;font-family:'Source Code Pro',monospace;font-size:12px;color:#a8ff78;overflow-y:auto;flex-shrink:0;}
-
-/* BROWSER */
-#browser-content{display:flex;flex-direction:column;height:100%;}
-#browser-bar{display:flex;align-items:center;gap:7px;padding:8px 12px;background:var(--win-bar);border-bottom:1px solid var(--border);}
-.browser-nav{background:var(--card);border:1px solid var(--border);color:var(--text);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
-.browser-nav:hover{background:var(--accent);border-color:var(--accent);}
-#browser-url{flex:1;padding:6px 12px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;}
-#browser-url:focus{border-color:var(--accent);}
-#browser-go{background:var(--accent);border:none;color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;}
-#browser-frame{flex:1;border:none;background:#fff;}
-#browser-home{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);gap:18px;padding:24px;}
-
-/* FILES */
-#files-content{display:flex;height:100%;background:#11111e;}
-#files-sidebar{width:165px;background:rgba(0,0,0,.22);border-right:1px solid var(--border);padding:12px 8px;display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
-.files-nav-item{padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;transition:background .15s;}
-.files-nav-item:hover,.files-nav-item.active{background:var(--card-hover);}
-#files-main{flex:1;padding:16px;overflow-y:auto;}
-#files-grid{display:grid;grid-template-columns:repeat(auto-fill,80px);gap:12px;}
-.file-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px;border-radius:10px;cursor:pointer;font-size:11px;text-align:center;transition:background .15s;}
-.file-item:hover{background:var(--card-hover);}
-.file-icon-wrap{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
-
-/* CAMERA */
-#camera-content{display:flex;flex-direction:column;height:100%;background:#09090f;}
-#camera-preview{flex:1;position:relative;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-#camera-video{width:100%;height:100%;object-fit:cover;}
-#camera-controls{padding:10px 14px;background:var(--win-bar);display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--border);}
-#camera-shutter{width:54px;height:54px;border-radius:50%;background:#fff;border:4px solid rgba(255,255,255,.3);cursor:pointer;transition:transform .1s,box-shadow .1s;}
-#camera-shutter:hover{transform:scale(1.08);box-shadow:0 0 0 8px rgba(255,255,255,.12);}
-.cam-btn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:background .15s;}
-.cam-btn:hover,.cam-btn.active{background:var(--accent);border-color:var(--accent);}
-#camera-photos{display:flex;gap:6px;overflow-x:auto;max-height:60px;align-items:center;}
-.cam-thumb{width:60px;height:48px;object-fit:cover;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:border .15s;flex-shrink:0;}
-.cam-thumb:hover{border-color:var(--accent);}
-.filter-btn{padding:4px 9px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;transition:background .15s;}
-.filter-btn.active{background:var(--accent2);border-color:var(--accent2);}
-
-/* YOUTUBE */
-#yt-content{display:flex;flex-direction:column;height:100%;background:#0f0f0f;}
-#yt-header{background:#111;border-bottom:1px solid #222;padding:8px 14px;display:flex;align-items:center;gap:10px;}
-#yt-search-input{flex:1;background:#222;border:1px solid #333;color:#fff;padding:7px 14px;border-radius:20px;font-size:13px;font-family:inherit;outline:none;}
-#yt-search-input:focus{border-color:#ff0000;}
-#yt-search-btn{background:#ff0000;border:none;color:#fff;padding:7px 16px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;}
-#yt-api-key-row{padding:6px 14px;background:#0a0a0a;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:8px;}
-#yt-api-key{flex:1;background:#1a1a1a;border:1px solid #333;color:#aaa;padding:5px 10px;border-radius:6px;font-size:11px;font-family:'Source Code Pro',monospace;outline:none;}
-#yt-key-save{background:#333;border:1px solid #444;color:#fff;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;}
-#yt-body{display:flex;flex:1;min-height:0;}
-#yt-player-col{flex:1;display:flex;flex-direction:column;min-height:0;}
-#yt-iframe-wrap{background:#000;aspect-ratio:16/9;max-height:55%;}
-#yt-iframe-wrap iframe{width:100%;height:100%;border:none;}
-#yt-video-info{padding:10px 14px;border-bottom:1px solid #1a1a1a;}
-#yt-video-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;}
-#yt-video-meta{font-size:12px;color:#aaa;}
-#yt-results-col{width:240px;overflow-y:auto;border-left:1px solid #1a1a1a;}
-.yt-result{display:flex;gap:8px;padding:8px 10px;cursor:pointer;border-bottom:1px solid #111;transition:background .15s;}
-.yt-result:hover{background:#1a1a1a;}
-.yt-thumb{width:80px;height:48px;object-fit:cover;border-radius:4px;flex-shrink:0;background:#222;}
-.yt-result-title{font-size:11px;color:#e0e0e0;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
-.yt-result-ch{font-size:10px;color:#888;margin-top:3px;}
-#yt-home-grid{display:flex;flex-wrap:wrap;gap:12px;padding:14px;overflow-y:auto;}
-.yt-cat-btn{padding:6px 14px;background:#222;border:1px solid #333;color:#fff;border-radius:20px;cursor:pointer;font-size:12px;transition:background .15s;}
-.yt-cat-btn:hover,.yt-cat-btn.active{background:#ff0000;border-color:#ff0000;}
-#yt-categories{padding:10px 14px;display:flex;gap:8px;overflow-x:auto;border-bottom:1px solid #1a1a1a;flex-shrink:0;}
-
-/* MUSIC */
-#music-content{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#11111e;padding:20px;gap:14px;}
-#music-art{width:130px;height:130px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:56px;box-shadow:0 10px 40px rgba(94,129,244,.35);animation:spin 8s linear infinite paused;}
-#music-art.playing{animation-play-state:running;}
-@keyframes spin{to{transform:rotate(360deg)}}
-.music-btn{background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;opacity:.8;transition:opacity .15s,transform .1s;}
-.music-btn:hover{opacity:1;transform:scale(1.1);}
-.music-btn.play-btn{font-size:34px;color:var(--accent);}
-#music-seek{width:100%;max-width:280px;accent-color:var(--accent);}
-.music-track{padding:7px 10px;border-radius:8px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:8px;transition:background .15s;}
-.music-track:hover,.music-track.active{background:var(--card-hover);}
-.music-track.active{color:var(--accent);}
-
-/* SYSMON */
-#sysmon-content{padding:16px;overflow-y:auto;background:#11111e;height:100%;}
-.sysmon-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;font-weight:700;}
-.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.bar-label{font-size:12px;width:58px;flex-shrink:0;}
-.bar-track{flex:1;height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;}
-.bar-fill{height:100%;border-radius:4px;transition:width 1s ease;}
-.bar-val{font-size:12px;color:var(--text-dim);width:40px;text-align:right;}
-#processes-table{width:100%;border-collapse:collapse;font-size:12px;}
-#processes-table th{text-align:left;color:var(--text-dim);padding:6px 8px;border-bottom:1px solid var(--border);font-weight:600;}
-#processes-table td{padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);}
-
-/* SETTINGS */
-#settings-content{display:flex;height:100%;background:#11111e;}
-#settings-sidebar{width:185px;background:rgba(0,0,0,.2);border-right:1px solid var(--border);padding:12px 8px;display:flex;flex-direction:column;gap:2px;}
-.settings-nav{padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;transition:background .15s;}
-.settings-nav:hover,.settings-nav.active{background:var(--accent);}
-#settings-main{flex:1;padding:20px;overflow-y:auto;}
-.settings-section{display:none;}
-.settings-section.active{display:block;}
-.settings-group{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;}
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border);}
-.settings-row:last-child{border-bottom:none;}
-.settings-label{font-size:13px;}
-.settings-label small{display:block;color:var(--text-dim);font-size:11px;margin-top:2px;}
-.toggle{width:40px;height:22px;border-radius:11px;background:rgba(255,255,255,.12);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
-.toggle.on{background:var(--accent);}
-.toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .2s;}
-.toggle.on::after{left:20px;}
-
-/* CLOCK */
-#clock-content{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#11111e;gap:18px;padding:20px;}
-#big-clock{font-size:68px;font-weight:300;font-family:'Nunito',sans-serif;letter-spacing:-2px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-#big-date{font-size:18px;color:var(--text-dim);font-weight:300;}
-#calendar-grid{display:grid;grid-template-columns:repeat(7,34px);gap:4px;}
-.cal-header{text-align:center;font-size:10px;color:var(--text-dim);padding:4px;font-weight:700;}
-.cal-day{text-align:center;font-size:12px;padding:6px;border-radius:6px;cursor:pointer;transition:background .15s;}
-.cal-day:hover{background:var(--card-hover);}
-.cal-day.today{background:var(--accent);color:#fff;font-weight:700;}
-.cal-day.other-month{color:rgba(255,255,255,.18);}
-
-/* CALCULATOR */
-#calc-content{height:100%;display:flex;flex-direction:column;background:#11111e;padding:14px;gap:8px;}
-#calc-display{background:rgba(0,0,0,.4);border-radius:10px;padding:14px;text-align:right;}
-#calc-expr{font-size:12px;color:var(--text-dim);min-height:18px;}
-#calc-result{font-size:38px;font-weight:300;color:var(--text);}
-#calc-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex:1;}
-.calc-btn{border-radius:10px;border:none;cursor:pointer;font-size:16px;font-family:inherit;font-weight:500;transition:transform .08s,filter .1s;display:flex;align-items:center;justify-content:center;}
-.calc-btn:hover{filter:brightness(1.15);}
-.calc-btn:active{transform:scale(.93);}
-.calc-btn.num{background:rgba(255,255,255,.1);color:var(--text);}
-.calc-btn.op{background:rgba(94,129,244,.3);color:var(--accent);}
-.calc-btn.eq{background:var(--accent);color:#fff;}
-.calc-btn.clear{background:rgba(255,107,107,.3);color:var(--red);}
-
-/* IMGVIEWER */
-#imgviewer-content{display:flex;flex-direction:column;height:100%;background:#07070e;}
-#imgviewer-main{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-#imgviewer-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--win-bar);border-top:1px solid var(--border);}
-.viewer-btn{background:var(--card);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
-.viewer-btn:hover{background:var(--accent);}
-
-/* GITHUB */
-#github-content{display:flex;flex-direction:column;height:100%;background:#0d1117;}
-#github-header{padding:14px;background:#161b22;border-bottom:1px solid #30363d;display:flex;align-items:center;gap:12px;}
-.github-card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:border-color .15s;}
-.github-card:hover{border-color:#58a6ff;}
-.repo-name{font-weight:700;font-size:14px;color:#58a6ff;margin-bottom:4px;}
-.repo-desc{font-size:12px;color:#8b949e;margin-bottom:8px;}
-.repo-meta{display:flex;gap:12px;font-size:11px;color:#8b949e;}
-
-/* GAMES */
-#snake-wrap{display:flex;flex-direction:column;align-items:center;height:100%;background:#0b0b16;padding:14px;gap:10px;}
-#tetris-wrap{display:flex;align-items:flex-start;justify-content:center;gap:14px;height:100%;background:#0b0b16;padding:14px;}
-#tetris-side{display:flex;flex-direction:column;gap:10px;min-width:110px;}
-.tetris-stat{background:var(--card);border-radius:8px;padding:10px;font-size:13px;}
-.tetris-stat-label{color:var(--text-dim);font-size:11px;margin-bottom:3px;}
-.tetris-stat-val{font-size:20px;font-weight:700;}
-#memory-wrap{display:flex;flex-direction:column;align-items:center;height:100%;background:#0b0b16;padding:14px;gap:12px;overflow-y:auto;}
-#memory-grid{display:grid;grid-template-columns:repeat(4,70px);gap:8px;}
-.mem-card{width:70px;height:70px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:transform .2s;border:2px solid transparent;}
-.mem-card.flipped{background:var(--card);border-color:var(--accent);}
-.mem-card.matched{background:rgba(107,203,119,.2);border-color:var(--green);}
-.mem-card:hover{transform:scale(1.05);}
-.game-btn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:background .15s;}
-.game-btn:hover{background:var(--accent);}
-
-/* NOTIFICATION */
-#notification{position:fixed;top:46px;right:14px;z-index:99999;background:rgba(22,22,38,.97);border:1px solid var(--border);border-radius:14px;padding:12px 16px;max-width:290px;box-shadow:var(--shadow);transform:translateX(120%);transition:transform .3s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:flex-start;gap:10px;}
-#notification.show{transform:translateX(0);}
-
-/* CONTEXT MENU */
-#context-menu{position:fixed;z-index:99999;background:rgba(20,20,36,.97);backdrop-filter:blur(22px);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:4px;min-width:175px;display:none;}
-#context-menu.show{display:block;}
-.ctx-item{padding:8px 14px;border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;transition:background .1s;}
-.ctx-item:hover{background:var(--accent);}
-.ctx-sep{height:1px;background:var(--border);margin:3px 0;}
-
-/* LOADER */
-#loader{position:fixed;inset:0;background:#07071a;z-index:99999999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;transition:opacity .6s;}
-#loader.fade{opacity:0;pointer-events:none;}
-.loader-logo-wrap{width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,#5e81f4,#c77dff);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 40px rgba(94,129,244,.4);}
-.loader-bar-track{width:200px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;}
-.loader-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;width:0;animation:loadbar 2.2s ease-out forwards;}
-@keyframes loadbar{to{width:100%}}
-
-::-webkit-scrollbar{width:5px;height:5px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:3px;}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-</style>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/topbar.css">
+<link rel="stylesheet" href="css/dock.css">
+<link rel="stylesheet" href="css/windows.css">
+<link rel="stylesheet" href="css/apps.css">
+<link rel="stylesheet" href="css/games.css">
+<link rel="stylesheet" href="css/ui.css">
 </head>
 <body>
 
@@ -294,9 +25,9 @@ body{font-family:'Cantarell','Nunito',sans-serif;background:var(--bg);color:var(
       <circle cx="68" cy="58" r="8" fill="white" opacity=".7"/>
     </svg>
   </div>
-  <div style="font-size:26px;font-weight:800;letter-spacing:3px;background:linear-gradient(135deg,#5e81f4,#c77dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ArcOS</div>
+  <div class="loader-title">ArcOS</div>
   <div class="loader-bar-track"><div class="loader-bar-fill"></div></div>
-  <div style="font-size:13px;color:var(--text-dim)">Loading desktop environment…</div>
+  <div class="loader-subtitle">Loading desktop environment…</div>
 </div>
 
 <div id="wallpaper"></div>
@@ -305,19 +36,40 @@ body{font-family:'Cantarell','Nunito',sans-serif;background:var(--bg);color:var(
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:8px;">
     <button id="activities-btn" onclick="toggleOverview()">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <rect x="1" y="1" width="6" height="6" rx="1.5"/>
+        <rect x="9" y="1" width="6" height="6" rx="1.5"/>
+        <rect x="1" y="9" width="6" height="6" rx="1.5"/>
+        <rect x="9" y="9" width="6" height="6" rx="1.5"/>
+      </svg>
       Activities
     </button>
     <span id="app-menu-name" style="font-weight:700;opacity:.7;font-size:13px;">ArcOS</span>
   </div>
   <span id="clock-display"></span>
   <div id="topbar-right">
-    <!-- wifi icon -->
-    <div class="tray-icon" title="Wi-Fi Connected"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg></div>
-    <!-- volume -->
-    <div class="tray-icon" title="Volume"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></div>
-    <!-- battery -->
-    <div class="tray-icon" title="Battery"><svg width="20" height="14" viewBox="0 0 24 14" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="1" width="18" height="12" rx="2"/><path d="M23 5v4" stroke-width="2.5" stroke-linecap="round"/><rect x="3" y="3" width="12" height="8" rx="1" fill="currentColor" opacity=".7"/></svg></div>
+    <div class="tray-icon" title="Wi-Fi Connected">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+        <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+        <circle cx="12" cy="20" r="1" fill="currentColor"/>
+      </svg>
+    </div>
+    <div class="tray-icon" title="Volume">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+      </svg>
+    </div>
+    <div class="tray-icon" title="Battery">
+      <svg width="20" height="14" viewBox="0 0 24 14" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="1" y="1" width="18" height="12" rx="2"/>
+        <path d="M23 5v4" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="3" y="3" width="12" height="8" rx="1" fill="currentColor" opacity=".7"/>
+      </svg>
+    </div>
     <span id="clock-right" style="font-weight:600;font-size:13px;letter-spacing:.3px;"></span>
     <div id="profile-pic" onclick="openApp('settings')" title="Settings">🧑</div>
   </div>
@@ -331,21 +83,30 @@ body{font-family:'Cantarell','Nunito',sans-serif;background:var(--bg);color:var(
 
 <!-- DOCK -->
 <div id="dock">
-  <div class="dock-icon" id="dock-files"     title="Files"          onclick="openApp('files')"      style="background:linear-gradient(145deg,#1db0a6,#148f88)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><path d="M8 12a4 4 0 014-4h10l4 4h14a4 4 0 014 4v20a4 4 0 01-4 4H12a4 4 0 01-4-4V12z" fill="white" opacity=".9"/><path d="M8 22h32" stroke="rgba(0,0,0,.2)" stroke-width="2"/></svg></div>
+  <div class="dock-icon" id="dock-files"     title="Files"          onclick="openApp('files')"      style="background:linear-gradient(145deg,#1db0a6,#148f88)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><path d="M8 12a4 4 0 014-4h10l4 4h14a4 4 0 014 4v20a4 4 0 01-4 4H12a4 4 0 01-4-4V12z" fill="white" opacity=".9"/></svg></div>
   <div class="dock-icon" id="dock-terminal"  title="Terminal"       onclick="openApp('terminal')"   style="background:linear-gradient(145deg,#2d3436,#1a1a2e)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><rect x="6" y="8" width="36" height="28" rx="4" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.3)" stroke-width="1.5"/><polyline points="12,18 20,24 12,30" stroke="#a8ff78" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="22" y1="30" x2="34" y2="30" stroke="#a8ff78" stroke-width="2" stroke-linecap="round"/></svg></div>
-  <div class="dock-icon" id="dock-browser"   title="Web Browser"    onclick="openApp('browser')"    style="background:linear-gradient(145deg,#4285f4,#1a73e8)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="18" fill="white" opacity=".15" stroke="white" stroke-width="1.5"/><circle cx="24" cy="24" r="18" fill="none" stroke="white" stroke-width="2"/><ellipse cx="24" cy="24" rx="8" ry="18" stroke="white" stroke-width="1.5" fill="none"/><line x1="6" y1="24" x2="42" y2="24" stroke="white" stroke-width="1.5"/><line x1="8" y1="16" x2="40" y2="16" stroke="white" stroke-width="1.2" opacity=".6"/><line x1="8" y1="32" x2="40" y2="32" stroke="white" stroke-width="1.2" opacity=".6"/></svg></div>
-  <div class="dock-icon" id="dock-editor"    title="Text Editor"    onclick="openApp('editor')"     style="background:linear-gradient(145deg,#7c3aed,#a855f7)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><rect x="8" y="6" width="26" height="34" rx="3" fill="rgba(255,255,255,.15)" stroke="white" stroke-width="1.5"/><line x1="13" y1="14" x2="29" y2="14" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="13" y1="20" x2="29" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="13" y1="26" x2="24" y2="26" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M32 28l8-8 4 4-8 8-5 1 1-5z" fill="white" stroke="white" stroke-width=".5"/></svg></div>
+  <div class="dock-icon" id="dock-browser"   title="Web Browser"    onclick="openApp('browser')"    style="background:linear-gradient(145deg,#4285f4,#1a73e8)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="18" fill="none" stroke="white" stroke-width="2"/><ellipse cx="24" cy="24" rx="8" ry="18" stroke="white" stroke-width="1.5" fill="none"/><line x1="6" y1="24" x2="42" y2="24" stroke="white" stroke-width="1.5"/></svg></div>
+  <div class="dock-icon" id="dock-editor"    title="Text Editor"    onclick="openApp('editor')"     style="background:linear-gradient(145deg,#7c3aed,#a855f7)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><rect x="8" y="6" width="26" height="34" rx="3" fill="rgba(255,255,255,.15)" stroke="white" stroke-width="1.5"/><line x1="13" y1="14" x2="29" y2="14" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="13" y1="20" x2="29" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="13" y1="26" x2="24" y2="26" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M32 28l8-8 4 4-8 8-5 1 1-5z" fill="white"/></svg></div>
   <div class="dock-icon" id="dock-code"      title="Code Editor"    onclick="openApp('code')"       style="background:linear-gradient(145deg,#007acc,#0066aa)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><path d="M17 14L7 24l10 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M31 14l10 10-10 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="27" y1="12" x2="21" y2="36" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".8"/></svg></div>
+  <div class="dock-icon" id="dock-postman"   title="API Tester"     onclick="openApp('postman')"    style="background:linear-gradient(145deg,#ff6c37,#e05a2b)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="16" stroke="white" stroke-width="2" fill="none"/><path d="M16 24h16M24 16l8 8-8 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
   <div class="dock-sep"></div>
-  <div class="dock-icon" id="dock-youtube"   title="YouTube"        onclick="openApp('youtube')"    style="background:linear-gradient(145deg,#ff0000,#cc0000)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><rect x="4" y="12" width="40" height="24" rx="8" fill="white" opacity=".18"/><rect x="4" y="12" width="40" height="24" rx="8" stroke="white" stroke-width="1.5" fill="none"/><polygon points="20,18 34,24 20,30" fill="white"/></svg></div>
+  <div class="dock-icon" id="dock-youtube"   title="YouTube"        onclick="openApp('youtube')"    style="background:linear-gradient(145deg,#ff0000,#cc0000)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><rect x="4" y="12" width="40" height="24" rx="8" fill="none" stroke="white" stroke-width="1.5"/><polygon points="20,18 34,24 20,30" fill="white"/></svg></div>
   <div class="dock-icon" id="dock-music"     title="Music"          onclick="openApp('music')"      style="background:linear-gradient(145deg,#e91e8c,#c2185b)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><circle cx="15" cy="36" r="6" fill="white" opacity=".9"/><circle cx="33" cy="30" r="6" fill="white" opacity=".9"/><line x1="21" y1="36" x2="21" y2="14" stroke="white" stroke-width="2.5"/><line x1="39" y1="30" x2="39" y2="8" stroke="white" stroke-width="2.5"/><polyline points="21,14 39,8" stroke="white" stroke-width="2.5"/></svg></div>
-  <div class="dock-icon" id="dock-camera"    title="Camera"         onclick="openApp('camera')"     style="background:linear-gradient(145deg,#00b894,#00897b)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><path d="M42 35a3 3 0 01-3 3H9a3 3 0 01-3-3V20a3 3 0 013-3h4l3-4h8l3 4h11a3 3 0 013 3v15z" fill="rgba(255,255,255,.18)" stroke="white" stroke-width="1.8"/><circle cx="24" cy="27" r="7" stroke="white" stroke-width="2"/><circle cx="24" cy="27" r="3" fill="white" opacity=".8"/></svg></div>
+  <div class="dock-icon" id="dock-camera"    title="Camera"         onclick="openApp('camera')"     style="background:linear-gradient(145deg,#00b894,#00897b)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><path d="M42 35a3 3 0 01-3 3H9a3 3 0 01-3-3V20a3 3 0 013-3h4l3-4h8l3 4h11a3 3 0 013 3v15z" fill="rgba(255,255,255,.15)" stroke="white" stroke-width="1.8"/><circle cx="24" cy="27" r="7" stroke="white" stroke-width="2"/></svg></div>
+  <div class="dock-icon" id="dock-paint"     title="Paint"          onclick="openApp('paint')"      style="background:linear-gradient(145deg,#fd79a8,#e84393)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><path d="M10 38c0-3 2-5 5-5s5 2 5 5-2 5-5 5-5-2-5-5z" fill="white" opacity=".9"/><path d="M14 33L34 10l4 4L18 37" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M34 10l4-4 4 4-4 4z" fill="white" opacity=".8"/></svg></div>
   <div class="dock-sep"></div>
   <div class="dock-icon" id="dock-github"    title="GitHub"         onclick="openApp('github')"     style="background:linear-gradient(145deg,#24292e,#161b22)"><svg width="30" height="30" viewBox="0 0 98 96" fill="white"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg></div>
-  <div class="dock-icon" id="dock-sysmon"    title="System Monitor" onclick="openApp('sysmon')"     style="background:linear-gradient(145deg,#f59e0b,#d97706)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><polyline points="4,36 14,20 22,28 30,14 38,24 44,12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="4" y="40" width="40" height="2" rx="1" fill="white" opacity=".4"/></svg></div>
+  <div class="dock-icon" id="dock-sysmon"    title="System Monitor" onclick="openApp('sysmon')"     style="background:linear-gradient(145deg,#f59e0b,#d97706)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><polyline points="4,36 14,20 22,28 30,14 38,24 44,12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
   <div class="dock-icon" id="dock-settings"  title="Settings"       onclick="openApp('settings')"   style="background:linear-gradient(145deg,#64748b,#475569)"><svg width="30" height="30" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="7" stroke="white" stroke-width="2.5"/><path d="M24 4v5M24 39v5M4 24h5M39 24h5M8.5 8.5l3.5 3.5M36 36l3.5 3.5M8.5 39.5L12 36M36 12l3.5-3.5" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg></div>
   <div class="dock-sep"></div>
-  <div class="dock-icon" title="All Apps" onclick="toggleOverview()" style="background:var(--card);border:1px solid var(--border)"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="8" height="8" rx="2" opacity=".7"/><rect x="14" y="2" width="8" height="8" rx="2" opacity=".7"/><rect x="2" y="14" width="8" height="8" rx="2" opacity=".7"/><rect x="14" y="14" width="8" height="8" rx="2" opacity=".7"/></svg></div>
+  <div class="dock-icon" title="All Apps" onclick="toggleOverview()" style="background:var(--card);border:1px solid var(--border)">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+      <rect x="2" y="2" width="8" height="8" rx="2" opacity=".7"/>
+      <rect x="14" y="2" width="8" height="8" rx="2" opacity=".7"/>
+      <rect x="2" y="14" width="8" height="8" rx="2" opacity=".7"/>
+      <rect x="14" y="14" width="8" height="8" rx="2" opacity=".7"/>
+    </svg>
+  </div>
 </div>
 
 <!-- NOTIFICATION -->
@@ -368,547 +129,19 @@ body{font-family:'Cantarell','Nunito',sans-serif;background:var(--bg);color:var(
   <div class="ctx-item" onclick="ctxAction('settings')">⚙️ Display Settings</div>
 </div>
 
-<script>
-// ─── SVG ICON HELPERS ────────────────────────────────────
-const APP_DEFS=[
-  {id:'terminal',  name:'Terminal',       bg:'linear-gradient(145deg,#2d3436,#1a1a2e)',  icon:`<svg viewBox="0 0 48 48" fill="none"><rect x="6" y="8" width="36" height="28" rx="4" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.3)" stroke-width="1.5"/><polyline points="12,18 20,24 12,30" stroke="#a8ff78" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="22" y1="30" x2="34" y2="30" stroke="#a8ff78" stroke-width="2" stroke-linecap="round"/></svg>`},
-  {id:'editor',    name:'Text Editor',    bg:'linear-gradient(145deg,#7c3aed,#a855f7)',  icon:`<svg viewBox="0 0 48 48" fill="none"><rect x="8" y="6" width="26" height="34" rx="3" fill="rgba(255,255,255,.15)" stroke="white" stroke-width="1.5"/><line x1="13" y1="14" x2="29" y2="14" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="13" y1="20" x2="29" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="13" y1="26" x2="24" y2="26" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M32 28l8-8 4 4-8 8-5 1 1-5z" fill="white"/></svg>`},
-  {id:'code',      name:'Code Editor',    bg:'linear-gradient(145deg,#007acc,#0066aa)',  icon:`<svg viewBox="0 0 48 48" fill="none"><path d="M17 14L7 24l10 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M31 14l10 10-10 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="27" y1="12" x2="21" y2="36" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".8"/></svg>`},
-  {id:'browser',   name:'Web Browser',    bg:'linear-gradient(145deg,#4285f4,#1a73e8)',  icon:`<svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="18" fill="rgba(255,255,255,.1)" stroke="white" stroke-width="2"/><ellipse cx="24" cy="24" rx="8" ry="18" stroke="white" stroke-width="1.5" fill="none"/><line x1="6" y1="24" x2="42" y2="24" stroke="white" stroke-width="1.5"/><line x1="8" y1="16" x2="40" y2="16" stroke="white" stroke-width="1.2" opacity=".6"/><line x1="8" y1="32" x2="40" y2="32" stroke="white" stroke-width="1.2" opacity=".6"/></svg>`},
-  {id:'files',     name:'Files',          bg:'linear-gradient(145deg,#1db0a6,#148f88)',  icon:`<svg viewBox="0 0 48 48" fill="none"><path d="M8 12a4 4 0 014-4h10l4 4h14a4 4 0 014 4v20a4 4 0 01-4 4H12a4 4 0 01-4-4V12z" fill="white" opacity=".9"/></svg>`},
-  {id:'youtube',   name:'YouTube',        bg:'linear-gradient(145deg,#ff0000,#cc0000)',  icon:`<svg viewBox="0 0 48 48" fill="none"><rect x="4" y="12" width="40" height="24" rx="8" fill="rgba(255,255,255,.1)" stroke="white" stroke-width="1.5"/><polygon points="20,18 34,24 20,30" fill="white"/></svg>`},
-  {id:'camera',    name:'Camera',         bg:'linear-gradient(145deg,#00b894,#00897b)',  icon:`<svg viewBox="0 0 48 48" fill="none"><path d="M42 35a3 3 0 01-3 3H9a3 3 0 01-3-3V20a3 3 0 013-3h4l3-4h8l3 4h11a3 3 0 013 3v15z" fill="rgba(255,255,255,.15)" stroke="white" stroke-width="1.8"/><circle cx="24" cy="27" r="7" stroke="white" stroke-width="2"/><circle cx="24" cy="27" r="3" fill="white" opacity=".8"/></svg>`},
-  {id:'music',     name:'Music Player',   bg:'linear-gradient(145deg,#e91e8c,#c2185b)',  icon:`<svg viewBox="0 0 48 48" fill="none"><circle cx="15" cy="36" r="6" fill="white" opacity=".9"/><circle cx="33" cy="30" r="6" fill="white" opacity=".9"/><line x1="21" y1="36" x2="21" y2="14" stroke="white" stroke-width="2.5"/><line x1="39" y1="30" x2="39" y2="8" stroke="white" stroke-width="2.5"/><polyline points="21,14 39,8" stroke="white" stroke-width="2.5"/></svg>`},
-  {id:'imgviewer', name:'Image Viewer',   bg:'linear-gradient(145deg,#f59e0b,#d97706)',  icon:`<svg viewBox="0 0 48 48" fill="none"><rect x="4" y="8" width="40" height="32" rx="4" fill="rgba(255,255,255,.1)" stroke="white" stroke-width="1.8"/><circle cx="16" cy="19" r="4" fill="white" opacity=".8"/><polyline points="4,36 14,24 22,30 30,20 44,32" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".9"/></svg>`},
-  {id:'calculator',name:'Calculator',     bg:'linear-gradient(145deg,#10b981,#059669)',  icon:`<svg viewBox="0 0 48 48" fill="none"><rect x="8" y="6" width="32" height="36" rx="4" fill="rgba(255,255,255,.12)" stroke="white" stroke-width="1.8"/><rect x="12" y="10" width="24" height="8" rx="2" fill="white" opacity=".8"/><circle cx="16" cy="26" r="2.5" fill="white" opacity=".7"/><circle cx="24" cy="26" r="2.5" fill="white" opacity=".7"/><circle cx="32" cy="26" r="2.5" fill="white" opacity=".7"/><circle cx="16" cy="34" r="2.5" fill="white" opacity=".7"/><circle cx="24" cy="34" r="2.5" fill="white" opacity=".7"/><rect x="29" y="31.5" width="6" height="5" rx="1" fill="white" opacity=".9"/></svg>`},
-  {id:'clock',     name:'Clock',          bg:'linear-gradient(145deg,#6366f1,#4f46e5)',  icon:`<svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="18" stroke="white" stroke-width="2"/><line x1="24" y1="14" x2="24" y2="24" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="24" x2="31" y2="29" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="24" cy="24" r="2" fill="white"/></svg>`},
-  {id:'sysmon',    name:'System Monitor', bg:'linear-gradient(145deg,#f59e0b,#d97706)',  icon:`<svg viewBox="0 0 48 48" fill="none"><polyline points="4,36 14,20 22,28 30,14 38,24 44,12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="4" y="40" width="40" height="2" rx="1" fill="white" opacity=".4"/></svg>`},
-  {id:'settings',  name:'Settings',       bg:'linear-gradient(145deg,#64748b,#475569)',  icon:`<svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="7" stroke="white" stroke-width="2.5"/><path d="M24 4v5M24 39v5M4 24h5M39 24h5M8.5 8.5l3.5 3.5M36 36l3.5 3.5M8.5 39.5L12 36M36 12l3.5-3.5" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>`},
-  {id:'github',    name:'GitHub',         bg:'linear-gradient(145deg,#24292e,#161b22)',  icon:`<svg viewBox="0 0 98 96" fill="white"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg>`},
-  {id:'snake',     name:'Snake',          bg:'linear-gradient(145deg,#16a34a,#15803d)',  icon:`<svg viewBox="0 0 48 48" fill="none"><path d="M8 24c0-8 6-12 12-12h8c6 0 10 4 10 10s-4 10-10 10H22c-4 0-6 2-6 4s2 4 6 4h6" stroke="white" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="34" cy="16" r="4" fill="white" opacity=".9"/><circle cx="32" cy="15" r="1" fill="#16a34a"/><circle cx="36" cy="15" r="1" fill="#16a34a"/></svg>`},
-  {id:'tetris',    name:'Tetris',         bg:'linear-gradient(145deg,#dc2626,#b91c1c)',  icon:`<svg viewBox="0 0 48 48" fill="none"><rect x="6" y="22" width="10" height="10" rx="2" fill="white" opacity=".9"/><rect x="16" y="22" width="10" height="10" rx="2" fill="white" opacity=".9"/><rect x="26" y="22" width="10" height="10" rx="2" fill="white" opacity=".9"/><rect x="36" y="22" width="6" height="10" rx="2" fill="white" opacity=".7"/><rect x="16" y="12" width="10" height="10" rx="2" fill="white" opacity=".6"/><rect x="6" y="32" width="10" height="10" rx="2" fill="white" opacity=".5"/><rect x="16" y="32" width="10" height="10" rx="2" fill="white" opacity=".5"/></svg>`},
-  {id:'memory',    name:'Memory Game',    bg:'linear-gradient(145deg,#7c3aed,#6d28d9)',  icon:`<svg viewBox="0 0 48 48" fill="none"><rect x="4" y="4" width="18" height="18" rx="3" fill="rgba(255,255,255,.15)" stroke="white" stroke-width="1.8"/><rect x="26" y="4" width="18" height="18" rx="3" fill="white" opacity=".85"/><rect x="4" y="26" width="18" height="18" rx="3" fill="white" opacity=".85"/><rect x="26" y="26" width="18" height="18" rx="3" fill="rgba(255,255,255,.15)" stroke="white" stroke-width="1.8"/><text x="32" y="19" font-size="12" fill="#7c3aed" font-weight="bold">?</text><text x="10" y="41" font-size="12" fill="#7c3aed" font-weight="bold">?</text></svg>`},
-];
-
-const openWindows={};
-let zCounter=100, dragTarget=null, dragOffX=0, dragOffY=0, overviewOpen=false;
-let currentUser='arcuser', termHistory=[], termHistIdx=-1;
-let cwd=['home'];
-
-const fileSystem={
-  home:{name:'Home',icon:'🏠',type:'dir',children:{
-    Documents:{name:'Documents',icon:'📄',type:'dir',children:{
-      'readme.txt':{name:'readme.txt',icon:'📝',type:'file',content:'Welcome to ArcOS!\n\nThis is a browser-based Linux desktop.\nType `help` in the terminal to get started.\n\nEnjoy exploring! 🐧'},
-      'notes.txt':{name:'notes.txt',icon:'📝',type:'file',content:'My Notes\n--------\n\n- Try the YouTube app\n- Play Snake or Tetris\n- Use the code editor\n'},
-    }},
-    Downloads:{name:'Downloads',icon:'⬇️',type:'dir',children:{}},
-    Pictures:{name:'Pictures',icon:'🖼️',type:'dir',children:{}},
-    Music:{name:'Music',icon:'🎵',type:'dir',children:{}},
-    Desktop:{name:'Desktop',icon:'🖥️',type:'dir',children:{}},
-  }},
-  bin:{name:'bin',icon:'⚙️',type:'dir',children:{}},
-  etc:{name:'etc',icon:'🔧',type:'dir',children:{}},
-  tmp:{name:'tmp',icon:'🗑️',type:'dir',children:{}},
-};
-
-// ─── BOOT ───────────────────────────────────────────────
-window.onload=function(){
-  setTimeout(()=>{
-    document.getElementById('loader').classList.add('fade');
-    setTimeout(()=>document.getElementById('loader').remove(),700);
-    showNotif('🐧','Welcome to ArcOS','Browser Linux Desktop — ready!');
-  },2500);
-  buildAppGrid();
-  startClock();
-  document.addEventListener('mousemove',onMouseMove);
-  document.addEventListener('mouseup',()=>dragTarget=null);
-  document.addEventListener('contextmenu',showContextMenu);
-  document.addEventListener('click',()=>document.getElementById('context-menu').classList.remove('show'));
-};
-
-function startClock(){
-  function tick(){
-    const n=new Date();
-    const s=n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    const d=n.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
-    const txt=`${d}  ${s}`;
-    const a=document.getElementById('clock-display');const b=document.getElementById('clock-right');
-    if(a)a.textContent=txt; if(b)b.textContent=txt;
-  }
-  tick();setInterval(tick,1000);
-}
-
-function buildAppGrid(){
-  const grid=document.getElementById('app-grid');
-  grid.innerHTML=APP_DEFS.map(a=>`
-    <div class="app-icon" data-app="${a.id}" data-name="${a.name.toLowerCase()}" onclick="openApp('${a.id}');closeOverview()">
-      <div class="app-icon-img" style="background:${a.bg}">${a.icon}</div>
-      <div class="app-icon-label">${a.name}</div>
-    </div>`).join('');
-}
-function filterApps(q){document.querySelectorAll('.app-icon').forEach(el=>{el.style.display=el.dataset.name.includes(q.toLowerCase())?'flex':'none';});}
-function toggleOverview(){overviewOpen=!overviewOpen;document.getElementById('overview').classList.toggle('active',overviewOpen);if(overviewOpen)setTimeout(()=>document.getElementById('overview-search').focus(),80);}
-function closeOverview(){overviewOpen=false;document.getElementById('overview').classList.remove('active');}
-
-// ─── WINDOWS ────────────────────────────────────────────
-function openApp(id){
-  if(openWindows[id]){focusWindow(id);return;}
-  const app=APP_DEFS.find(a=>a.id===id);
-  const win=document.createElement('div');
-  win.className='window';win.id=`win-${id}`;
-  const[w,h,x,y]=getDefaultSize(id);
-  win.style.cssText=`width:${w}px;height:${h}px;left:${x}px;top:${y}px;z-index:${++zCounter}`;
-  win.innerHTML=`
-    <div class="window-bar" onmousedown="startDrag(event,'${id}')">
-      <button class="win-btn win-close" onclick="closeApp('${id}')"></button>
-      <button class="win-btn win-min" onclick="minimizeWin('${id}')"></button>
-      <button class="win-btn win-max" onclick="maximizeWin('${id}')"></button>
-      <div class="win-title">
-        ${app?`<div style="width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;background:${app.bg};flex-shrink:0">${app.icon.replace(/width="[^"]*"/g,'width="12"').replace(/height="[^"]*"/g,'height="12"')}</div>`:''}
-        <span>${app?app.name:id}</span>
-      </div>
-    </div>
-    <div class="window-content" id="wc-${id}">${buildContent(id)}</div>`;
-  document.body.appendChild(win);
-  openWindows[id]=win;
-  addResize(win);
-  document.getElementById(`dock-${id}`)?.classList.add('active');
-  afterOpen(id);
-  // auto-focus terminal input
-  if(id==='terminal')setTimeout(()=>document.getElementById('term-input')?.focus(),120);
-  if(id==='files')setTimeout(()=>renderFiles(),80);
-}
-
-function getDefaultSize(id){
-  const sz={terminal:[700,440],editor:[680,480],code:[820,540],browser:[900,560],files:[740,480],camera:[640,500],music:[340,510],imgviewer:[600,440],calculator:[280,440],clock:[360,440],sysmon:[700,460],settings:[720,500],github:[660,480],snake:[420,480],tetris:[460,510],memory:[420,490],youtube:[920,580]};
-  const[w,h]=sz[id]||[600,420];
-  const x=Math.max(60,Math.random()*(window.innerWidth-w-100)+50);
-  const y=Math.max(44,Math.random()*(window.innerHeight-h-120)+44);
-  return[w,h,Math.round(x),Math.round(y)];
-}
-
-function buildContent(id){
-  const m={terminal:buildTerminal,editor:buildEditor,code:buildCode,browser:buildBrowser,files:buildFiles,camera:buildCamera,music:buildMusic,imgviewer:buildImgViewer,calculator:buildCalculator,clock:buildClock,sysmon:buildSysMon,settings:buildSettings,github:buildGithub,snake:buildSnake,tetris:buildTetris,memory:buildMemory,youtube:buildYoutube};
-  return m[id]?m[id]():`<div style="padding:20px;color:var(--text-dim)">App not found</div>`;
-}
-function afterOpen(id){
-  if(id==='clock')startClockWidget();
-  if(id==='sysmon')startSysMon();
-  if(id==='camera')initCamera();
-  if(id==='snake')initSnake();
-  if(id==='tetris')initTetris();
-  if(id==='memory')initMemory();
-  if(id==='music')initMusic();
-  if(id==='code')initCode();
-  if(id==='browser')initBrowser();
-  if(id==='terminal')initTerminal();
-  if(id==='youtube')initYoutube();
-}
-
-function closeApp(id){openWindows[id]?.remove();delete openWindows[id];document.getElementById(`dock-${id}`)?.classList.remove('active');if(id==='snake')snakeRunning=false;if(id==='tetris')tetrisRunning=false;if(id==='camera')stopCamera();}
-function focusWindow(id){const w=openWindows[id];if(!w)return;w.style.zIndex=++zCounter;if(w.style.display==='none')w.style.display='flex';}
-function minimizeWin(id){const w=openWindows[id];if(w)w.style.display='none';}
-function maximizeWin(id){
-  const w=openWindows[id];if(!w)return;
-  if(w.dataset.maximized){Object.assign(w.style,JSON.parse(w.dataset.prevStyle));delete w.dataset.maximized;}
-  else{w.dataset.prevStyle=JSON.stringify({width:w.style.width,height:w.style.height,left:w.style.left,top:w.style.top});Object.assign(w.style,{width:'100vw',height:'calc(100vh - 36px)',left:'0',top:'36px'});w.dataset.maximized='1';}
-}
-function startDrag(e,id){
-  if(e.target.classList.contains('win-btn'))return;
-  const w=openWindows[id];if(!w)return;focusWindow(id);
-  dragTarget=w;const r=w.getBoundingClientRect();dragOffX=e.clientX-r.left;dragOffY=e.clientY-r.top;e.preventDefault();
-}
-function onMouseMove(e){if(!dragTarget)return;dragTarget.style.left=(e.clientX-dragOffX)+'px';dragTarget.style.top=Math.max(36,e.clientY-dragOffY)+'px';}
-function addResize(win){
-  const h=document.createElement('div');h.style.cssText='position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:se-resize;z-index:1;';
-  let rsx,rsy,rw,rh;
-  h.onmousedown=e=>{rsx=e.clientX;rsy=e.clientY;rw=win.offsetWidth;rh=win.offsetHeight;
-    function rm(e){win.style.width=Math.max(300,rw+e.clientX-rsx)+'px';win.style.height=Math.max(200,rh+e.clientY-rsy)+'px';}
-    function ru(){document.removeEventListener('mousemove',rm);document.removeEventListener('mouseup',ru);}
-    document.addEventListener('mousemove',rm);document.addEventListener('mouseup',ru);e.stopPropagation();e.preventDefault();};
-  win.appendChild(h);
-}
-
-// ─── TERMINAL ──────────────────────────────────────────
-function buildTerminal(){
-  return`<div id="terminal-content" onclick="document.getElementById('term-input')?.focus()">
-    <div id="term-output"></div>
-    <div id="term-input-row">
-      <span id="term-prompt" style="color:#5e81f4;white-space:nowrap;font-family:'Source Code Pro',monospace;font-size:13px">arcuser@arcos:~$ </span>
-      <input id="term-input" type="text" autocomplete="off" spellcheck="false" onkeydown="termKey(event)" style="background:transparent;border:none;color:#a8ff78;font-family:'Source Code Pro',monospace;font-size:13px;flex:1;outline:none;caret-color:#a8ff78;">
-    </div>
-  </div>`;
-}
-function initTerminal(){
-  setTimeout(()=>{
-    addLine('<span style="color:#5e81f4;font-weight:700">╔══════════════════════════════╗</span>');
-    addLine('<span style="color:#5e81f4;font-weight:700">║   Welcome to ArcOS Terminal  ║</span>');
-    addLine('<span style="color:#5e81f4;font-weight:700">╚══════════════════════════════╝</span>');
-    addLine('<span style="color:#48cfad">Type <b style="color:#ffd93d">help</b> for commands, <b style="color:#ffd93d">neofetch</b> for system info</span>','');
-    addLine('');
-    scrollTerminal();
-  },80);
-}
-function termKey(e){
-  const inp=document.getElementById('term-input');if(!inp)return;
-  if(e.key==='Enter'){const cmd=inp.value.trim();if(cmd){termHistory.unshift(cmd);termHistIdx=-1;}inp.value='';runCmd(cmd);}
-  else if(e.key==='ArrowUp'){e.preventDefault();if(termHistIdx<termHistory.length-1){termHistIdx++;inp.value=termHistory[termHistIdx];}}
-  else if(e.key==='ArrowDown'){e.preventDefault();if(termHistIdx>0){termHistIdx--;inp.value=termHistory[termHistIdx];}else{termHistIdx=-1;inp.value='';}}
-  else if(e.key==='Tab'){e.preventDefault();tabComplete(inp);}
-}
-function tabComplete(inp){
-  const v=inp.value;const commands=['ls','cd','cat','echo','pwd','mkdir','rm','touch','clear','help','whoami','date','uname','ps','history','man','grep','head','tail','wc','neofetch','write'];
-  const match=commands.filter(c=>c.startsWith(v));
-  if(match.length===1)inp.value=match[0]+' ';
-  else if(match.length>1)addLine(match.join('  '),'info');
-}
-function runCmd(cmd){
-  const prompt=`<span style="color:#5e81f4">arcuser@arcos</span><span style="color:#aaa">:</span><span style="color:#48cfad">~${cwd.length>1?'/'+cwd.slice(1).join('/'):''}$</span> `;
-  addLine(prompt+(cmd||''));if(!cmd)return;
-  const parts=cmd.trim().split(/\s+/);const base=parts[0];
-  const cmds={
-    help:()=>{addLine('─── ArcOS Shell Commands ───','info');['ls','cd <dir>','cat <file>','mkdir <n>','rm <n>','touch <n>','echo <text>','pwd','clear','whoami','date','uname','ps','neofetch','history','man <cmd>','head <file>','tail <file>','wc <file>','grep <pat> <file>','write <file> <text>'].forEach(c=>addLine('  '+c));},
-    ls:()=>{const dir=getCurrentDir();const e=Object.values(dir.children||{});if(!e.length){addLine('(empty)','info');return;}addLine(e.map(f=>f.type==='dir'?`<span style="color:#5e81f4">${f.name}/</span>`:`<span style="color:#e0e0e0">${f.name}</span>`).join('  '));},
-    pwd:()=>addLine('/'+cwd.join('/')),
-    whoami:()=>addLine(currentUser),
-    date:()=>addLine(new Date().toString()),
-    clear:()=>{document.getElementById('term-output').innerHTML='';},
-    history:()=>termHistory.forEach((h,i)=>addLine(`${termHistory.length-i}  ${h}`)),
-    echo:()=>addLine(parts.slice(1).join(' ')),
-    uname:()=>addLine('ArcOS 6.1.0-arcos #1 SMP x86_64 GNU/Linux'),
-    neofetch:()=>{addLine(`<pre style="color:#5e81f4;font-size:12px;line-height:1.5">   .-.     <span style="color:#e8e8f0">arcuser<span style="color:#aaa">@</span>arcos</span>
-  (o o)    <span style="color:#aaa">─────────────────</span>
-   |>|     <span style="color:#5e81f4">OS</span>: ArcOS 6.1.0
-  /   \\    <span style="color:#5e81f4">Kernel</span>: 6.1.0-arcos
- (_\\_/_)   <span style="color:#5e81f4">Shell</span>: arcsh 2.0
-           <span style="color:#5e81f4">WM</span>: ArcGNOME
-           <span style="color:#5e81f4">CPU</span>: Browser Engine × ∞
-           <span style="color:#5e81f4">Memory</span>: Unlimited RAM™</pre>`);},
-    ps:()=>{addLine('PID   TTY   TIME     CMD','info');[['1','?','00:00:01','init'],['42','?','00:00:00','arcwm'],['99','pts/0','00:00:00','arcsh'],['201','?','00:00:03','browser-engine']].forEach(([p,t,ti,c])=>addLine(`${p.padEnd(6)}${t.padEnd(6)}${ti.padEnd(9)}${c}`));},
-    cd:()=>{const t=parts[1];if(!t||t==='~'){cwd=['home'];updatePrompt();return;}if(t==='..'){if(cwd.length>1){cwd.pop();updatePrompt();}return;}const dir=getCurrentDir();if(dir.children&&dir.children[t]&&dir.children[t].type==='dir'){cwd.push(t);updatePrompt();}else addLine(`cd: ${t}: No such directory`,'err');},
-    cat:()=>{const f=parts[1];if(!f){addLine('Usage: cat <file>','err');return;}const d=getCurrentDir();const file=d.children&&d.children[f];if(!file){addLine(`cat: ${f}: No such file`,'err');return;}if(file.type==='dir'){addLine(`cat: ${f}: Is a directory`,'err');return;}(file.content||'(empty)').split('\n').forEach(l=>addLine(l));},
-    mkdir:()=>{const n=parts[1];if(!n){addLine('Usage: mkdir <n>','err');return;}const d=getCurrentDir();if(!d.children)d.children={};d.children[n]={name:n,icon:'📁',type:'dir',children:{}};addLine(`mkdir: created '${n}'`,'info');},
-    touch:()=>{const n=parts[1];if(!n){addLine('Usage: touch <n>','err');return;}const d=getCurrentDir();if(!d.children)d.children={};d.children[n]={name:n,icon:'📝',type:'file',content:''};addLine(`touch: created '${n}'`,'info');},
-    rm:()=>{const n=parts[1];if(!n){addLine('Usage: rm <n>','err');return;}const d=getCurrentDir();if(d.children&&d.children[n]){delete d.children[n];addLine(`rm: removed '${n}'`,'info');}else addLine(`rm: ${n}: No such file`,'err');},
-    write:()=>{const n=parts[1];const t=parts.slice(2).join(' ');if(!n||!t){addLine('Usage: write <file> <text>','err');return;}const d=getCurrentDir();if(!d.children)d.children={};d.children[n]={name:n,icon:'📝',type:'file',content:t};addLine(`Wrote to '${n}'`,'info');},
-    man:()=>{const t=parts[1];if(!t){addLine('What manual page?','err');return;}addLine(`${t.toUpperCase()}(1)        ArcOS Manual        ${t.toUpperCase()}(1)`,'info');addLine(`\nNAME\n    ${t} – command in ArcOS\n\nSYNOPSIS\n    ${t} [OPTIONS]... [ARGS]...\n\nDESCRIPTION\n    Simulated man page for ${t}.`);},
-    head:()=>{const f=parts[1];if(!f){addLine('Usage: head <file>','err');return;}const d=getCurrentDir();const file=d.children&&d.children[f];if(!file||file.type==='dir'){addLine(`head: ${f}: No such file`,'err');return;}(file.content||'').split('\n').slice(0,10).forEach(l=>addLine(l));},
-    tail:()=>{const f=parts[1];if(!f){addLine('Usage: tail <file>','err');return;}const d=getCurrentDir();const file=d.children&&d.children[f];if(!file||file.type==='dir'){addLine(`tail: ${f}: No such file`,'err');return;}const lines=(file.content||'').split('\n');lines.slice(Math.max(0,lines.length-10)).forEach(l=>addLine(l));},
-    wc:()=>{const f=parts[1];if(!f){addLine('Usage: wc <file>','err');return;}const d=getCurrentDir();const file=d.children&&d.children[f];if(!file||file.type==='dir'){addLine(`wc: ${f}: No such file`,'err');return;}const c=file.content||'';addLine(`  ${c.split('\n').length}  ${c.split(/\s+/).filter(Boolean).length}  ${c.length}  ${f}`);},
-    grep:()=>{const p=parts[1];const f=parts[2];if(!p||!f){addLine('Usage: grep <pat> <file>','err');return;}const d=getCurrentDir();const file=d.children&&d.children[f];if(!file||file.type==='dir'){addLine(`grep: ${f}: No such file`,'err');return;}(file.content||'').split('\n').forEach((l,i)=>{if(l.includes(p))addLine(`${i+1}:${l.replace(new RegExp(p,'g'),`<span style="background:#ffd93d;color:#000">${p}</span>`)}`);});},
-  };
-  if(cmds[base])cmds[base]();
-  else addLine(`${base}: command not found — type <b>help</b>`,'err');
-  scrollTerminal();
-}
-function addLine(html,cls=''){const out=document.getElementById('term-output');if(!out)return;const d=document.createElement('div');d.className='term-line'+(cls?' '+cls:'');d.innerHTML=html;out.appendChild(d);}
-function scrollTerminal(){const t=document.getElementById('terminal-content');if(t)t.scrollTop=t.scrollHeight;}
-function getCurrentDir(){let d=fileSystem;for(const k of cwd)d=d[k]||d.children?.[k]||d;return d;}
-function updatePrompt(){const p=document.getElementById('term-prompt');if(p)p.textContent=`arcuser@arcos:~${cwd.length>1?'/'+cwd.slice(1).join('/'):''}$ `;}
-
-// ─── TEXT EDITOR ───────────────────────────────────────
-function buildEditor(){return`<div id="editor-content"><div id="editor-toolbar"><button class="editor-btn" onclick="editorNew()">⬜ New</button><button class="editor-btn" onclick="editorSave()">💾 Save</button><button class="editor-btn" onclick="editorSaveLocal()">⬇️ Download</button><input id="editor-filename" type="text" value="untitled.txt" placeholder="filename.txt"><select id="editor-theme" class="settings-select" onchange="updateEditorTheme(this.value)"><option value="dark">Dark</option><option value="light">Light</option><option value="solarized">Solarized</option></select></div><textarea id="text-area" spellcheck="true" placeholder="Start typing…" oninput="updateEditorStatus()"></textarea><div id="editor-status"><span id="ed-lines">Lines: 1</span><span id="ed-words">Words: 0</span><span id="ed-chars">Chars: 0</span><span id="ed-saved" style="margin-left:auto;color:var(--text-dim)">● Unsaved</span></div></div>`;}
-function updateEditorStatus(){const ta=document.getElementById('text-area');if(!ta)return;const v=ta.value;document.getElementById('ed-lines').textContent='Lines: '+v.split('\n').length;document.getElementById('ed-words').textContent='Words: '+v.trim().split(/\s+/).filter(Boolean).length;document.getElementById('ed-chars').textContent='Chars: '+v.length;}
-function editorNew(){const ta=document.getElementById('text-area');if(ta)ta.value='';document.getElementById('editor-filename').value='untitled.txt';}
-function editorSave(){const fn=document.getElementById('editor-filename').value;const c=document.getElementById('text-area').value;const d=getCurrentDir();if(!d.children)d.children={};d.children[fn]={name:fn,icon:'📝',type:'file',content:c};document.getElementById('ed-saved').style.color='var(--green)';document.getElementById('ed-saved').textContent='● Saved';showNotif('💾','Saved',fn);}
-function editorSaveLocal(){const fn=document.getElementById('editor-filename').value;const c=document.getElementById('text-area').value;const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(c);a.download=fn;a.click();showNotif('⬇️','Downloaded',fn+' saved to your machine');}
-function updateEditorTheme(t){const ta=document.getElementById('text-area');if(!ta)return;const th={dark:{bg:'#0b0b16',color:'#e8e8f0'},light:{bg:'#f0f0f8',color:'#1a1a2e'},solarized:{bg:'#002b36',color:'#839496'}};const s=th[t]||th.dark;ta.style.background=s.bg;ta.style.color=s.color;}
-
-// ─── CODE EDITOR ───────────────────────────────────────
-function buildCode(){return`<div id="code-content"><div id="code-toolbar"><select id="code-lang" class="settings-select"><option>JavaScript</option><option>Python</option><option>HTML</option><option>CSS</option><option>Bash</option></select><button class="editor-btn" onclick="newCodeFile()">New</button><button class="editor-btn" onclick="downloadCode()">⬇️ Download</button><button id="code-run" style="background:var(--green);border:none;color:#000;padding:5px 14px;border-radius:7px;cursor:pointer;font-size:12px;font-family:inherit;font-weight:700;" onclick="runCode()">▶ Run</button><select class="settings-select" onchange="document.getElementById('code-area').style.fontSize=this.value+'px'"><option value="11">11px</option><option value="13" selected>13px</option><option value="15">15px</option></select></div><div id="code-area-wrap"><div id="line-nums">1</div><textarea id="code-area" spellcheck="false" oninput="updateLineNums()" onkeydown="codeKeyDown(event)"></textarea></div><div id="code-output"><div style="color:var(--text-dim);font-size:11px;margin-bottom:5px">▶ Output:</div><div id="code-output-content"></div></div></div>`;}
-function initCode(){const ca=document.getElementById('code-area');if(ca){ca.value=`// Welcome to ArcOS Code Editor!\n// Press ▶ Run to execute JavaScript\n\nconsole.log("Hello from ArcOS! 🐧");\n\nconst nums = [1,2,3,4,5];\nconst sum = nums.reduce((a,b) => a+b, 0);\nconsole.log("Sum:", sum);\n\n// Fibonacci\nfunction fib(n) {\n  if(n<=1) return n;\n  return fib(n-1)+fib(n-2);\n}\nfor(let i=0;i<10;i++) console.log(\`fib(\${i}) = \${fib(i)}\`);`;updateLineNums();}}
-function updateLineNums(){const ca=document.getElementById('code-area');const ln=document.getElementById('line-nums');if(!ca||!ln)return;const n=ca.value.split('\n').length;ln.innerHTML=Array.from({length:n},(_,i)=>i+1).join('<br>');}
-function codeKeyDown(e){if(e.key==='Tab'){e.preventDefault();const ca=e.target;const s=ca.selectionStart;ca.value=ca.value.slice(0,s)+'  '+ca.value.slice(ca.selectionEnd);ca.selectionStart=ca.selectionEnd=s+2;updateLineNums();}}
-function runCode(){const ca=document.getElementById('code-area');const out=document.getElementById('code-output-content');if(!ca||!out)return;const lang=document.getElementById('code-lang').value;if(lang!=='JavaScript'){out.style.color='var(--yellow)';out.textContent='Note: Only JavaScript runs in the browser. Other languages show syntax only.';return;}const logs=[];const origLog=console.log;console.log=(...a)=>{logs.push(a.map(x=>typeof x==='object'?JSON.stringify(x,null,2):String(x)).join(' '));origLog(...a);};try{eval(ca.value);out.style.color='#a8ff78';out.textContent=logs.join('\n')||'(no output)';}catch(err){out.style.color='var(--red)';out.textContent='Error: '+err.message;}finally{console.log=origLog;}}
-function newCodeFile(){const ca=document.getElementById('code-area');if(ca){ca.value='';updateLineNums();}}
-function downloadCode(){const ca=document.getElementById('code-area');const lang=document.getElementById('code-lang').value;const exts={JavaScript:'js',Python:'py',HTML:'html',CSS:'css',Bash:'sh'};const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(ca.value);a.download='code.'+(exts[lang]||'txt');a.click();}
-
-// ─── BROWSER ────────────────────────────────────────────
-function buildBrowser(){return`<div id="browser-content"><div id="browser-bar"><button class="browser-nav" title="Back">◀</button><button class="browser-nav" title="Forward">▶</button><button class="browser-nav" title="Refresh" onclick="document.getElementById('browser-frame')?.contentWindow.location.reload()">↻</button><input id="browser-url" type="text" placeholder="Search DuckDuckGo or enter URL…" onkeydown="if(event.key==='Enter')browserGo()"><button id="browser-go" onclick="browserGo()">Go</button></div><div id="browser-home"><div style="font-size:48px;margin-bottom:4px">🦆</div><div style="font-size:22px;font-weight:700;margin-bottom:4px">ArcOS Browser</div><div style="color:var(--text-dim);font-size:13px;margin-bottom:16px">Powered by DuckDuckGo</div><div style="display:flex;gap:8px;width:100%;max-width:500px"><input id="browser-search-input" type="text" placeholder="Search the web…" onkeydown="if(event.key==='Enter')browserSearch(this.value)" style="flex:1;padding:10px 16px;background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:24px;color:var(--text);font-size:14px;font-family:inherit;outline:none;"><button onclick="browserSearch(document.getElementById('browser-search-input').value)" style="background:var(--accent);border:none;color:#fff;padding:10px 20px;border-radius:24px;cursor:pointer;font-size:14px;font-weight:600">Search</button></div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px"><a style="padding:6px 14px;background:var(--card);border:1px solid var(--border);border-radius:20px;color:var(--text-dim);cursor:pointer;font-size:12px;text-decoration:none" href="#" onclick="loadUrl('https://github.com/adnan123456a')">🐙 GitHub</a><a style="padding:6px 14px;background:var(--card);border:1px solid var(--border);border-radius:20px;color:var(--text-dim);cursor:pointer;font-size:12px;text-decoration:none" href="#" onclick="loadUrl('https://news.ycombinator.com')">📰 Hacker News</a><a style="padding:6px 14px;background:var(--card);border:1px solid var(--border);border-radius:20px;color:var(--text-dim);cursor:pointer;font-size:12px;text-decoration:none" href="#" onclick="loadUrl('https://developer.mozilla.org')">📚 MDN</a><a style="padding:6px 14px;background:var(--card);border:1px solid var(--border);border-radius:20px;color:var(--text-dim);cursor:pointer;font-size:12px;text-decoration:none" href="#" onclick="loadUrl('https://stackoverflow.com')">💬 StackOverflow</a></div></div><iframe id="browser-frame" style="display:none;flex:1;border:none;background:#fff" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe></div>`;}
-function initBrowser(){}
-function browserGo(){const u=document.getElementById('browser-url').value.trim();if(!u)return;if(u.includes(' ')||!u.includes('.')){browserSearch(u);return;}loadUrl(u.startsWith('http')?u:'https://'+u);}
-function browserSearch(q){if(!q)return;loadUrl('https://duckduckgo.com/?q='+encodeURIComponent(q));document.getElementById('browser-url').value='https://duckduckgo.com/?q='+encodeURIComponent(q);}
-function loadUrl(url){const f=document.getElementById('browser-frame');const h=document.getElementById('browser-home');if(!f||!h)return;f.src=url;f.style.cssText='flex:1;border:none;background:#fff;display:block';h.style.display='none';document.getElementById('browser-url').value=url;showNotif('🌐','Browser','Loading…');}
-
-// ─── FILES ─────────────────────────────────────────────
-function buildFiles(){return`<div id="files-content"><div id="files-sidebar"><div class="files-nav-item active" onclick="navigateTo(['home'])"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> Home</div><div class="files-nav-item" onclick="navigateTo(['home','Documents'])"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Documents</div><div class="files-nav-item" onclick="navigateTo(['home','Downloads'])"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Downloads</div><div class="files-nav-item" onclick="navigateTo(['home','Pictures'])"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Pictures</div><div class="files-nav-item" onclick="navigateTo(['home','Music'])"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Music</div><div class="files-nav-item" onclick="navigateTo(['tmp'])"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg> Trash</div></div><div id="files-main"><div id="files-path" style="font-size:12px;color:var(--text-dim);margin-bottom:12px;padding:4px 0;border-bottom:1px solid var(--border)"></div><div id="files-grid"></div></div></div>`;}
-function navigateTo(path){cwd=path;renderFiles();}
-function renderFiles(){
-  const grid=document.getElementById('files-grid');const pe=document.getElementById('files-path');if(!grid)return;
-  let dir=fileSystem;for(const k of cwd)dir=dir[k]||dir.children?.[k]||dir;
-  if(pe)pe.textContent='/'+cwd.join('/');
-  const entries=Object.values(dir.children||{});
-  const iconMap={dir:'<svg viewBox="0 0 48 48" fill="none"><path d="M8 12a4 4 0 014-4h10l4 4h14a4 4 0 014 4v20a4 4 0 01-4 4H12a4 4 0 01-4-4V12z" fill="#1db0a6" opacity=".9"/></svg>',file:'<svg viewBox="0 0 48 48" fill="none"><rect x="10" y="6" width="28" height="36" rx="3" fill="#a29bfe"/><line x1="16" y1="18" x2="32" y2="18" stroke="white" stroke-width="2"/><line x1="16" y1="24" x2="32" y2="24" stroke="white" stroke-width="2"/><line x1="16" y1="30" x2="24" y2="30" stroke="white" stroke-width="2"/></svg>',image:'<svg viewBox="0 0 48 48" fill="none"><rect x="4" y="8" width="40" height="32" rx="4" fill="#fdcb6e"/><circle cx="16" cy="19" r="4" fill="white" opacity=".8"/><polyline points="4,36 14,24 22,30 30,20 44,32" stroke="white" stroke-width="2" fill="none"/></svg>'};
-  grid.innerHTML=entries.length?entries.map(e=>`<div class="file-item" ondblclick="fileOpen('${e.name}')"><div class="file-icon-wrap">${iconMap[e.type]||iconMap.file}</div><div>${e.name}</div></div>`).join(''):'<div style="color:var(--text-dim);font-size:13px;padding:10px">Empty folder</div>';
-}
-function fileOpen(name){let dir=fileSystem;for(const k of cwd)dir=dir[k]||dir.children?.[k]||dir;const f=dir.children?.[name];if(!f)return;if(f.type==='dir'){cwd=[...cwd,name];renderFiles();}else{openApp('editor');setTimeout(()=>{const ta=document.getElementById('text-area');const fn=document.getElementById('editor-filename');if(ta)ta.value=f.content||'';if(fn)fn.value=f.name;},120);}}
-
-// ─── CAMERA ────────────────────────────────────────────
-let cameraStream=null,camFilter='none';
-function buildCamera(){return`<div id="camera-content"><div id="camera-preview"><video id="camera-video" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover"></video><canvas id="camera-canvas" style="display:none"></canvas><div id="camera-overlay" style="position:absolute;inset:0;pointer-events:none"></div></div><div style="padding:8px 12px;background:var(--win-bar);border-top:1px solid var(--border)"><div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;color:var(--text-dim);align-self:center">Filter: </span>${['Normal','B&W','Sepia','Vivid','Invert','Blur','Pop'].map((f,i)=>`<button class="filter-btn${i===0?' active':''}" onclick="setCamFilter(['none','grayscale(100%)','sepia(80%)','hue-rotate(90deg)','invert(80%)','blur(2px)','contrast(150%) saturate(150%)'][${i}],this)">${f}</button>`).join('')}</div></div><div id="camera-controls"><div style="display:flex;gap:6px"><button class="cam-btn active" onclick="toggleMirror()">🪞 Mirror</button><button class="cam-btn" onclick="document.getElementById('camera-video').style.filter='none';document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.filter-btn')[0].classList.add('active')">Reset</button></div><button id="camera-shutter" onclick="takePhoto()"></button><div id="camera-photos"></div></div></div>`;}
-function initCamera(){navigator.mediaDevices?.getUserMedia({video:true,audio:false}).then(s=>{cameraStream=s;const v=document.getElementById('camera-video');if(v)v.srcObject=s;}).catch(()=>showNotif('📷','Camera','Camera access denied'));}
-function stopCamera(){cameraStream?.getTracks().forEach(t=>t.stop());}
-function setCamFilter(f,btn){const v=document.getElementById('camera-video');if(v)v.style.filter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn?.classList.add('active');}
-function toggleMirror(){const v=document.getElementById('camera-video');if(v)v.style.transform=v.style.transform.includes('scaleX(-1)')?'':'scaleX(-1)';}
-function takePhoto(){const v=document.getElementById('camera-video');const canvas=document.createElement('canvas');if(!v||!v.videoWidth){showNotif('📷','Camera','No camera feed');return;}canvas.width=v.videoWidth;canvas.height=v.videoHeight;const ctx=canvas.getContext('2d');ctx.filter=v.style.filter||'none';if(v.style.transform.includes('scaleX(-1)')){ctx.translate(canvas.width,0);ctx.scale(-1,1);}ctx.drawImage(v,0,0);const url=canvas.toDataURL('image/png');const photos=document.getElementById('camera-photos');if(photos){const img=document.createElement('img');img.className='cam-thumb';img.src=url;img.title='Click to download';img.onclick=()=>{const a=document.createElement('a');a.href=url;a.download='photo_'+Date.now()+'.png';a.click();};photos.appendChild(img);}const ov=document.getElementById('camera-overlay');if(ov){ov.style.background='rgba(255,255,255,.9)';setTimeout(()=>ov.style.background='transparent',100);}showNotif('📷','Photo taken','Click thumbnail to download');}
-
-// ─── YOUTUBE ───────────────────────────────────────────
-let ytApiKey='',ytCurrentId='';
-function buildYoutube(){
-  return`<div id="yt-content">
-    <div id="yt-header">
-      <svg width="28" height="20" viewBox="0 0 28 20"><rect width="28" height="20" rx="5" fill="#ff0000"/><polygon points="11,5 21,10 11,15" fill="white"/></svg>
-      <span style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.5px">YouTube</span>
-      <input id="yt-search-input" type="text" placeholder="🔍  Search YouTube…" onkeydown="if(event.key==='Enter')ytSearch(this.value)">
-      <button id="yt-search-btn" onclick="ytSearch(document.getElementById('yt-search-input').value)">Search</button>
-    </div>
-    <div id="yt-api-key-row">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><circle cx="8" cy="15" r="5"/><path d="M13 15h9M18 10v10"/></svg>
-      <span style="font-size:11px;color:#666">YouTube API Key (get free at console.cloud.google.com):</span>
-      <input id="yt-api-key" type="password" placeholder="AIza… paste your YouTube Data API v3 key here">
-      <button id="yt-key-save" onclick="ytSaveKey()">Save Key</button>
-      <span style="font-size:11px;color:#666;margin-left:8px">— or just watch curated videos below without a key</span>
-    </div>
-    <div id="yt-categories">
-      ${['🔥 Trending','💻 Tech','🎵 Music','🎮 Gaming','📚 Education','🌍 News','😂 Comedy'].map((c,i)=>`<button class="yt-cat-btn${i===0?' active':''}" onclick="ytLoadCategory('${c}',this)">${c}</button>`).join('')}
-    </div>
-    <div id="yt-body">
-      <div id="yt-player-col">
-        <div id="yt-iframe-wrap" style="background:#000;display:flex;align-items:center;justify-content:center;min-height:200px;max-height:55%">
-          <div id="yt-placeholder" style="text-align:center;color:#555;padding:30px">
-            <div style="font-size:48px;margin-bottom:8px">▶</div>
-            <div style="font-size:14px">Select a video to play</div>
-            <div style="font-size:12px;margin-top:6px;color:#444">or search above</div>
-          </div>
-        </div>
-        <div id="yt-video-info" style="display:none">
-          <div id="yt-video-title"></div>
-          <div id="yt-video-meta"></div>
-        </div>
-        <div id="yt-home-grid"></div>
-      </div>
-      <div id="yt-results-col">
-        <div id="yt-results-inner" style="padding:8px">
-          <div style="font-size:11px;color:#666;margin-bottom:8px;padding:0 2px">SUGGESTED VIDEOS</div>
-          <div id="yt-results-list"></div>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-const YT_CURATED=[
-  {id:'dQw4w9WgXcQ',title:'Rick Astley — Never Gonna Give You Up',channel:'Rick Astley',thumb:'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg'},
-  {id:'jNQXAC9IVRw',title:'Me at the zoo (first YouTube video)',channel:'jawed',thumb:'https://img.youtube.com/vi/jNQXAC9IVRw/mqdefault.jpg'},
-  {id:'9bZkp7q19f0',title:'PSY — GANGNAM STYLE',channel:'officialpsy',thumb:'https://img.youtube.com/vi/9bZkp7q19f0/mqdefault.jpg'},
-  {id:'kJQP7kiw5Fk',title:'Luis Fonsi — Despacito',channel:'LuisFonsiVEVO',thumb:'https://img.youtube.com/vi/kJQP7kiw5Fk/mqdefault.jpg'},
-  {id:'OPf0YbXqDm0',title:'Mark Ronson — Uptown Funk',channel:'MarkRonsonVEVO',thumb:'https://img.youtube.com/vi/OPf0YbXqDm0/mqdefault.jpg'},
-  {id:'JGwWNGJdvx8',title:'Ed Sheeran — Shape of You',channel:'EdSheeranVEVO',thumb:'https://img.youtube.com/vi/JGwWNGJdvx8/mqdefault.jpg'},
-  {id:'RgKAFK5djSk',title:'Wiz Khalifa — See You Again',channel:'WizKhalifaVEVO',thumb:'https://img.youtube.com/vi/RgKAFK5djSk/mqdefault.jpg'},
-  {id:'YqeW9_5kURI',title:'Justin Bieber — Baby',channel:'JustinBieberVEVO',thumb:'https://img.youtube.com/vi/YqeW9_5kURI/mqdefault.jpg'},
-  {id:'CevxZvSJLk8',title:'Katy Perry — Roar',channel:'KatyPerryVEVO',thumb:'https://img.youtube.com/vi/CevxZvSJLk8/mqdefault.jpg'},
-  {id:'hT_nvWreIhg',title:'OneRepublic — Counting Stars',channel:'OneRepublicVEVO',thumb:'https://img.youtube.com/vi/hT_nvWreIhg/mqdefault.jpg'},
-];
-function initYoutube(){showYtSuggested(YT_CURATED);}
-function ytSaveKey(){const k=document.getElementById('yt-api-key').value.trim();if(k){ytApiKey=k;showNotif('🔑','API Key Saved','YouTube search enabled!');document.getElementById('yt-api-key-row').style.background='rgba(0,150,0,.1)';}else showNotif('⚠️','No Key','Please paste your API key');}
-function showYtSuggested(videos){
-  const list=document.getElementById('yt-results-list');if(!list)return;
-  list.innerHTML=videos.map(v=>`<div class="yt-result" onclick="ytPlay('${v.id}','${v.title.replace(/'/g,"\\'")}','${v.channel}')"><img class="yt-thumb" src="${v.thumb}" onerror="this.style.background='#333'" alt=""><div><div class="yt-result-title">${v.title}</div><div class="yt-result-ch">${v.channel}</div></div></div>`).join('');
-}
-function ytPlay(id,title,channel){
-  ytCurrentId=id;
-  const wrap=document.getElementById('yt-iframe-wrap');const ph=document.getElementById('yt-placeholder');const info=document.getElementById('yt-video-info');if(!wrap)return;
-  if(ph)ph.style.display='none';
-  // Remove old iframe
-  const old=wrap.querySelector('iframe');if(old)old.remove();
-  const iframe=document.createElement('iframe');
-  iframe.src=`https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
-  iframe.style.cssText='width:100%;height:100%;border:none;min-height:200px;';
-  iframe.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-  iframe.allowFullscreen=true;
-  wrap.appendChild(iframe);
-  if(info){info.style.display='block';document.getElementById('yt-video-title').textContent=title;document.getElementById('yt-video-meta').textContent=channel;}
-}
-async function ytSearch(q){
-  if(!q)return;
-  if(!ytApiKey){
-    // Fallback: filter curated + show redirect
-    const results=YT_CURATED.filter(v=>v.title.toLowerCase().includes(q.toLowerCase())||v.channel.toLowerCase().includes(q.toLowerCase()));
-    if(results.length>0){showYtSuggested(results);showNotif('🔍','Search','Showing curated results. Add API key for full search.');}
-    else{showNotif('🔑','Add API Key','Paste a YouTube Data API v3 key to search all of YouTube');document.getElementById('yt-api-key').focus();}
-    return;
-  }
-  showNotif('🔍','Searching','Searching YouTube…');
-  try{
-    const res=await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=15&q=${encodeURIComponent(q)}&type=video&key=${ytApiKey}`);
-    const data=await res.json();
-    if(data.error){showNotif('⚠️','API Error',data.error.message.slice(0,60));return;}
-    const videos=data.items.map(item=>({id:item.id.videoId,title:item.snippet.title,channel:item.snippet.channelTitle,thumb:item.snippet.thumbnails.medium?.url||item.snippet.thumbnails.default?.url}));
-    showYtSuggested(videos);
-    showNotif('✅','Search Done',`${videos.length} results for "${q}"`);
-  }catch(e){showNotif('⚠️','Search Error','Check your API key and internet connection');}
-}
-function ytLoadCategory(cat,btn){
-  document.querySelectorAll('.yt-cat-btn').forEach(b=>b.classList.remove('active'));btn?.classList.add('active');
-  const filtered=YT_CURATED.slice(Math.floor(Math.random()*3),Math.floor(Math.random()*3)+7);
-  showYtSuggested(filtered);
-}
-
-// ─── MUSIC PLAYER (Web Audio) ──────────────────────────
-const musicTracks=[
-  {title:'Cosmic Journey',artist:'ArcOS Sounds',emoji:'🌌',hue:240},
-  {title:'Neon Pulse',artist:'Synthwave',emoji:'💜',hue:280},
-  {title:'Digital Rain',artist:'Chill Bits',emoji:'💚',hue:160},
-  {title:'Orbit',artist:'Space Audio',emoji:'🔵',hue:200},
-  {title:'Terminal Beat',artist:'Hacker Vibes',emoji:'🟡',hue:45},
-];
-let musicIdx=0,musicPlaying=false,musicProgress=0,musicTimer=null;
-let audioCtx=null,audioOsc=null,audioGain=null;
-
-function buildMusic(){return`<div id="music-content"><div id="music-art" style="background:linear-gradient(135deg,hsl(240,70%,55%),hsl(280,70%,65%))">🌌</div><div id="music-title" style="font-size:17px;font-weight:700;text-align:center">Cosmic Journey</div><div id="music-artist" style="color:var(--text-dim);font-size:13px">ArcOS Sounds</div><div style="font-size:11px;color:var(--text-dim);text-align:center;background:rgba(94,129,244,.1);border:1px solid rgba(94,129,244,.2);border-radius:8px;padding:6px 12px;max-width:280px">🎵 Generative ambient music — plays synthesized tones.<br>For real audio, drag & drop MP3 files below.</div><div style="display:flex;align-items:center;gap:8px;width:100%;max-width:280px"><span id="music-cur" style="font-size:11px;color:var(--text-dim)">0:00</span><input id="music-seek" type="range" min="0" max="100" value="0" oninput="musicSeek(this.value)"><span id="music-dur" style="font-size:11px;color:var(--text-dim)">3:00</span></div><div id="music-controls"><button class="music-btn" onclick="musicPrev()">⏮</button><button class="music-btn" onclick="musicShuffle()">🔀</button><button class="music-btn play-btn" id="music-play" onclick="toggleMusic()">▶</button><button class="music-btn" onclick="musicRepeat()">🔁</button><button class="music-btn" onclick="musicNext()">⏭</button></div><div style="width:100%;max-width:280px"><input type="file" id="music-file-input" accept="audio/*" multiple style="display:none" onchange="loadMusicFile(this)"><button onclick="document.getElementById('music-file-input').click()" style="width:100%;background:var(--card);border:1px dashed var(--border);color:var(--text-dim);padding:7px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit">📂 Open MP3 / Audio File</button></div><div class="music-list" id="music-list" style="width:100%;max-width:280px;max-height:130px;overflow-y:auto">${musicTracks.map((t,i)=>`<div class="music-track${i===0?' active':''}" onclick="playTrack(${i})"><span style="font-size:16px">${t.emoji}</span>${t.title}<span style="margin-left:auto;color:var(--text-dim);font-size:11px">3:00</span></div>`).join('')}</div></div>`;}
-function initMusic(){}
-
-function toggleMusic(){
-  musicPlaying=!musicPlaying;
-  const art=document.getElementById('music-art');const btn=document.getElementById('music-play');
-  if(art)art.classList.toggle('playing',musicPlaying);if(btn)btn.textContent=musicPlaying?'⏸':'▶';
-  if(musicPlaying){
-    // Web Audio synth
-    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    stopAudio();
-    const track=musicTracks[musicIdx];
-    audioOsc=audioCtx.createOscillator();audioGain=audioCtx.createGain();
-    audioOsc.type='sine';audioOsc.frequency.setValueAtTime(220+track.hue,audioCtx.currentTime);
-    audioGain.gain.setValueAtTime(0.08,audioCtx.currentTime);
-    // Add some harmonics for richness
-    const osc2=audioCtx.createOscillator();const gain2=audioCtx.createGain();
-    osc2.type='triangle';osc2.frequency.setValueAtTime(440+track.hue/2,audioCtx.currentTime);
-    gain2.gain.setValueAtTime(0.04,audioCtx.currentTime);
-    osc2.connect(gain2);gain2.connect(audioCtx.destination);osc2.start();
-    // LFO for movement
-    const lfo=audioCtx.createOscillator();const lfoGain=audioCtx.createGain();
-    lfo.frequency.value=0.5;lfoGain.gain.value=30;lfo.connect(lfoGain);lfoGain.connect(audioOsc.frequency);lfo.start();
-    audioOsc.connect(audioGain);audioGain.connect(audioCtx.destination);audioOsc.start();
-    window._audioNodes=[audioOsc,osc2,lfo];
-    musicTimer=setInterval(()=>{musicProgress=Math.min(100,musicProgress+100/180);const sk=document.getElementById('music-seek');if(sk)sk.value=musicProgress;const cur=Math.floor(musicProgress/100*180);const cc=document.getElementById('music-cur');if(cc)cc.textContent=Math.floor(cur/60)+':'+String(cur%60).padStart(2,'0');if(musicProgress>=100)musicNext();},1000);
-  }else{stopAudio();clearInterval(musicTimer);}
-}
-function stopAudio(){if(window._audioNodes)window._audioNodes.forEach(n=>{try{n.stop();}catch(e){}});window._audioNodes=[];}
-function musicSeek(v){musicProgress=Number(v);}
-function musicNext(){musicProgress=0;musicIdx=(musicIdx+1)%musicTracks.length;loadTrack();if(musicPlaying){stopAudio();clearInterval(musicTimer);musicPlaying=false;toggleMusic();}}
-function musicPrev(){musicProgress=0;musicIdx=(musicIdx-1+musicTracks.length)%musicTracks.length;loadTrack();}
-function playTrack(i){musicIdx=i;musicProgress=0;loadTrack();if(!musicPlaying)toggleMusic();}
-function musicShuffle(){musicIdx=Math.floor(Math.random()*musicTracks.length);loadTrack();}
-function musicRepeat(){musicProgress=0;}
-function loadTrack(){
-  const t=musicTracks[musicIdx];
-  const art=document.getElementById('music-art');const tl=document.getElementById('music-title');const al=document.getElementById('music-artist');
-  if(art){art.style.background=`linear-gradient(135deg,hsl(${t.hue},70%,45%),hsl(${t.hue+50},70%,60%))`;art.textContent=t.emoji;}
-  if(tl)tl.textContent=t.title;if(al)al.textContent=t.artist;
-  document.querySelectorAll('.music-track').forEach((el,i)=>el.classList.toggle('active',i===musicIdx));
-}
-function loadMusicFile(input){
-  const files=Array.from(input.files);if(!files.length)return;
-  files.forEach(file=>{
-    const url=URL.createObjectURL(file);
-    const audio=new Audio(url);
-    const idx=musicTracks.push({title:file.name.replace(/\.[^.]+$/,''),artist:'Local File',emoji:'🎵',hue:Math.floor(Math.random()*360),_audio:audio})-1;
-    const list=document.getElementById('music-list');
-    if(list){const div=document.createElement('div');div.className='music-track';div.innerHTML=`<span style="font-size:16px">🎵</span>${musicTracks[idx].title}<span style="margin-left:auto;color:var(--text-dim);font-size:11px">MP3</span>`;div.onclick=()=>playLocalTrack(idx);list.appendChild(div);}
-  });
-  showNotif('🎵','Music Loaded',files.length+' file(s) added');
-}
-function playLocalTrack(idx){
-  stopAudio();if(musicTimer)clearInterval(musicTimer);
-  const t=musicTracks[idx];if(!t._audio)return;
-  musicIdx=idx;loadTrack();
-  const btn=document.getElementById('music-play');const art=document.getElementById('music-art');
-  musicPlaying=true;if(btn)btn.textContent='⏸';if(art)art.classList.add('playing');
-  t._audio.play();
-  t._audio.ontimeupdate=()=>{if(!t._audio.duration)return;const p=(t._audio.currentTime/t._audio.duration)*100;musicProgress=p;const sk=document.getElementById('music-seek');if(sk)sk.value=p;const cur=Math.floor(t._audio.currentTime);const cc=document.getElementById('music-cur');if(cc)cc.textContent=Math.floor(cur/60)+':'+String(cur%60).padStart(2,'0');};
-  t._audio.onended=()=>musicNext();
-}
-
-// ─── CLOCK ────────────────────────────────────────────
-function buildClock(){return`<div id="clock-content"><div id="big-clock">00:00:00</div><div id="big-date"></div><div id="calendar-grid"></div></div>`;}
-let clockInterval;
-function startClockWidget(){function tick(){const n=new Date();const cl=document.getElementById('big-clock');const dt=document.getElementById('big-date');if(cl)cl.textContent=n.toLocaleTimeString('en-US',{hour12:false});if(dt)dt.textContent=n.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});buildCalendar(n);}tick();clockInterval=setInterval(tick,1000);}
-function buildCalendar(now){const grid=document.getElementById('calendar-grid');if(!grid)return;const y=now.getFullYear(),m=now.getMonth();const first=new Date(y,m,1).getDay();const days=new Date(y,m+1,0).getDate();let html=['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="cal-header">${d}</div>`).join('');for(let i=0;i<first;i++)html+=`<div class="cal-day other-month"></div>`;for(let d=1;d<=days;d++)html+=`<div class="cal-day${d===now.getDate()?' today':''}">${d}</div>`;grid.innerHTML=html;}
-
-// ─── SYSMON ───────────────────────────────────────────
-function buildSysMon(){return`<div id="sysmon-content"><div style="margin-bottom:16px"><div class="sysmon-title">CPU</div>${[0,1,2,3].map(i=>`<div class="bar-row"><div class="bar-label">Core ${i}</div><div class="bar-track"><div class="bar-fill" id="cpu${i}" style="background:var(--accent);width:0"></div></div><div class="bar-val" id="cpu${i}v">0%</div></div>`).join('')}</div><div style="margin-bottom:16px"><div class="sysmon-title">Memory</div><div class="bar-row"><div class="bar-label">RAM</div><div class="bar-track"><div class="bar-fill" id="ram" style="background:var(--accent3);width:42%"></div></div><div class="bar-val">42%</div></div><div class="bar-row"><div class="bar-label">Swap</div><div class="bar-track"><div class="bar-fill" id="swap" style="background:var(--yellow);width:8%"></div></div><div class="bar-val">8%</div></div></div><div><div class="sysmon-title">Processes</div><table id="processes-table"><tr><th>PID</th><th>Name</th><th>CPU%</th><th>MEM</th><th>Status</th></tr><tr><td>1</td><td>arcwm</td><td id="p1cpu">2.1</td><td>12MB</td><td style="color:var(--green)">running</td></tr><tr><td>42</td><td>arcshell</td><td id="p2cpu">0.3</td><td>4MB</td><td style="color:var(--green)">running</td></tr><tr><td>99</td><td>browser</td><td id="p3cpu">14.2</td><td>88MB</td><td style="color:var(--green)">running</td></tr><tr><td>201</td><td>networkd</td><td id="p4cpu">0.1</td><td>3MB</td><td style="color:var(--yellow)">sleeping</td></tr><tr><td>305</td><td>youtube</td><td id="p5cpu">3.8</td><td>22MB</td><td style="color:var(--green)">running</td></tr></table></div></div>`;}
-function startSysMon(){function u(){[0,1,2,3].forEach(i=>{const v=Math.round(Math.random()*75+5);const e=document.getElementById(`cpu${i}`);const vl=document.getElementById(`cpu${i}v`);if(e)e.style.width=v+'%';if(vl)vl.textContent=v+'%';});['p1cpu','p2cpu','p3cpu','p4cpu','p5cpu'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=(Math.random()*20).toFixed(1);});}u();setInterval(u,1500);}
-
-// ─── SETTINGS ─────────────────────────────────────────
-function buildSettings(){return`<div id="settings-content"><div id="settings-sidebar"><div class="settings-nav active" onclick="switchSettings('appearance',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 100 12h.02"/></svg> Appearance</div><div class="settings-nav" onclick="switchSettings('display',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Display</div><div class="settings-nav" onclick="switchSettings('sound',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg> Sound</div><div class="settings-nav" onclick="switchSettings('network',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg> Network</div><div class="settings-nav" onclick="switchSettings('about',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> About</div></div><div id="settings-main"><div class="settings-section active" id="settings-appearance"><h3 style="margin-bottom:14px">Appearance</h3><div class="settings-group"><div class="settings-row"><div class="settings-label">Dark Mode<small>System-wide dark theme</small></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div><div class="settings-row"><div class="settings-label">Blur Effects<small>Window transparency</small></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div><div class="settings-row"><div class="settings-label">Animations</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div></div><div class="settings-group"><div class="settings-row"><div class="settings-label">Accent Color</div><div style="display:flex;gap:7px">${['#5e81f4','#c77dff','#48cfad','#ff6b6b','#ffd93d','#fd79a8','#ff9f43'].map(c=>`<div style="width:22px;height:22px;border-radius:50%;background:${c};cursor:pointer;border:2px solid rgba(255,255,255,.15);transition:transform .15s" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform=''" onclick="changeAccent('${c}')"></div>`).join('')}</div></div></div><div class="settings-group"><div class="settings-row"><div class="settings-label">Wallpaper Style</div><select class="settings-select" onchange="changeWallpaper(this.value)"><option value="default">Nebula (Default)</option><option value="ocean">Deep Ocean</option><option value="forest">Forest</option><option value="sunset">Sunset</option><option value="space">Deep Space</option><option value="cyberpunk">Cyberpunk</option></select></div></div></div><div class="settings-section" id="settings-display"><h3 style="margin-bottom:14px">Display</h3><div class="settings-group"><div class="settings-row"><div class="settings-label">Night Light<small>Reduce blue light</small></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div></div></div><div class="settings-section" id="settings-sound"><h3 style="margin-bottom:14px">Sound</h3><div class="settings-group"><div class="settings-row"><div class="settings-label">Master Volume</div><input type="range" min="0" max="100" value="75" style="accent-color:var(--accent)"></div><div class="settings-row"><div class="settings-label">System Sounds</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div></div></div><div class="settings-section" id="settings-network"><h3 style="margin-bottom:14px">Network</h3><div class="settings-group"><div class="settings-row"><div class="settings-label">Wi-Fi<small>Connected: ArcOS-5G</small></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div><div class="settings-row"><div class="settings-label">Bluetooth</div><div class="toggle" onclick="this.classList.toggle('on')"></div></div></div></div><div class="settings-section" id="settings-about"><h3 style="margin-bottom:14px">About ArcOS</h3><div class="settings-group"><div class="settings-row"><div class="settings-label">OS</div><div style="font-size:12px;color:var(--text-dim)">ArcOS 6.1.0</div></div><div class="settings-row"><div class="settings-label">Kernel</div><div style="font-size:12px;color:var(--text-dim)">6.1.0-arcos-desktop</div></div><div class="settings-row"><div class="settings-label">Shell</div><div style="font-size:12px;color:var(--text-dim)">arcsh 2.0</div></div><div class="settings-row"><div class="settings-label">Desktop</div><div style="font-size:12px;color:var(--text-dim)">ArcGNOME 44.2</div></div><div class="settings-row"><div class="settings-label">Memory</div><div style="font-size:12px;color:var(--text-dim)">∞ GB RAM</div></div></div></div></div></div>`;}
-function switchSettings(id,btn){document.querySelectorAll('.settings-section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.settings-nav').forEach(n=>n.classList.remove('active'));document.getElementById('settings-'+id)?.classList.add('active');btn?.classList.add('active');}
-function changeAccent(c){document.documentElement.style.setProperty('--accent',c);showNotif('🎨','Accent Updated','Color applied');}
-function changeWallpaper(w){const s={default:'radial-gradient(ellipse 80% 60% at 15% 55%,rgba(94,129,244,.18) 0,transparent 60%),radial-gradient(ellipse 60% 50% at 85% 15%,rgba(199,125,255,.16) 0,transparent 55%),linear-gradient(150deg,#07071a,#0d0d1e 35%,#121228 65%,#0a1a35 100%)',ocean:'linear-gradient(150deg,#0077b6,#023e8a,#03045e)',forest:'linear-gradient(150deg,#1b4332,#2d6a4f,#40916c)',sunset:'linear-gradient(150deg,#f8961e,#f3722c,#d62828,#6d023c)',space:'linear-gradient(150deg,#000000,#0a0a1a,#0d0d2e)',cyberpunk:'linear-gradient(150deg,#0d0221,#1a0a2e,#2d1b4e,#0d1421)',};document.getElementById('wallpaper').style.background=s[w]||s.default;showNotif('🎨','Wallpaper','Changed to '+w);}
-
-// ─── GITHUB ───────────────────────────────────────────
-function buildGithub(){return`<div id="github-content"><div id="github-header"><svg width="32" height="32" viewBox="0 0 98 96" fill="white"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg><div><div style="font-weight:700;font-size:16px;color:#c9d1d9">GitHub Repos</div><div style="font-size:12px;color:#8b949e">Your open source projects</div></div><a href="https://github.com/adnan123456a" target="_blank" style="margin-left:auto;background:#238636;color:#fff;border:none;padding:7px 14px;border-radius:8px;text-decoration:none;font-size:12px;font-family:inherit">Open GitHub ↗</a></div><div style="padding:12px 14px;overflow-y:auto;height:calc(100% - 72px)">${[{name:'linux-desktop-browser',desc:'Full GNOME-like Linux desktop in the browser',stars:142,lang:'JavaScript',langColor:'#f1e05a',forks:28},{name:'arcos-kernel',desc:'Simulated Linux kernel modules for ArcOS',stars:89,lang:'C',langColor:'#555555',forks:12},{name:'arc-shell',desc:'Unix-like shell interpreter in WebAssembly',stars:67,lang:'Rust',langColor:'#dea584',forks:9},{name:'web-terminal',desc:'Feature-rich terminal emulator with Canvas',stars:234,lang:'TypeScript',langColor:'#2b7489',forks:45},{name:'dotfiles',desc:'Personal ArcOS configuration files',stars:31,lang:'Shell',langColor:'#89e051',forks:6}].map(r=>`<div class="github-card" onclick="window.open('https://github.com/adnan123456a','_blank')"><div class="repo-name">📦 ${r.name}</div><div class="repo-desc">${r.desc}</div><div class="repo-meta"><span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${r.langColor};margin-right:4px"></span>${r.lang}</span><span>⭐ ${r.stars}</span><span>🍴 ${r.forks}</span><span style="margin-left:auto;color:#58a6ff">View →</span></div></div>`).join('')}</div></div>`;}
-
-// ─── CALCULATOR ────────────────────────────────────────
-let calcExpr='';
-function buildCalculator(){const flat=[{l:'C',c:'clear'},{l:'±',c:'num',fn:'calcToggle()'},{l:'%',c:'num',fn:'calcPercent()'},{l:'÷',c:'op',fn:"calcOp('/')"},{l:'7',c:'num',fn:"calcNum('7')"},{l:'8',c:'num',fn:"calcNum('8')"},{l:'9',c:'num',fn:"calcNum('9')"},{l:'×',c:'op',fn:"calcOp('*')"},{l:'4',c:'num',fn:"calcNum('4')"},{l:'5',c:'num',fn:"calcNum('5')"},{l:'6',c:'num',fn:"calcNum('6')"},{l:'−',c:'op',fn:"calcOp('-')"},{l:'1',c:'num',fn:"calcNum('1')"},{l:'2',c:'num',fn:"calcNum('2')"},{l:'3',c:'num',fn:"calcNum('3')"},{l:'+',c:'op',fn:"calcOp('+')"},{l:'0',c:'num span2',fn:"calcNum('0')"},{l:'.',c:'num',fn:"calcNum('.')"},{l:'=',c:'eq',fn:'calcEquals()'}];return`<div id="calc-content"><div id="calc-display"><div id="calc-expr"></div><div id="calc-result">0</div></div><div id="calc-buttons">${flat.map(b=>`<button class="calc-btn ${b.c==='clear'?'clear':b.c==='op'?'op':b.c==='eq'?'eq':b.c.includes('span2')?'num':b.c}" ${b.c.includes('span2')?'style="grid-column:span 2"':''} onclick="${b.c==='clear'?'calcClear()':b.fn}">${b.l}</button>`).join('')}</div></div>`;}
-function calcNum(n){calcExpr+=n;document.getElementById('calc-result').textContent=calcExpr;}
-function calcOp(op){calcExpr+=op;document.getElementById('calc-expr').textContent=calcExpr;document.getElementById('calc-result').textContent=calcExpr;}
-function calcEquals(){try{const r=Function('"use strict";return ('+calcExpr.replace(/÷/g,'/').replace(/×/g,'*').replace(/−/g,'-')+')')();document.getElementById('calc-expr').textContent=calcExpr+'=';document.getElementById('calc-result').textContent=r;calcExpr=String(r);}catch(e){document.getElementById('calc-result').textContent='Error';calcExpr='';}}
-function calcClear(){calcExpr='';document.getElementById('calc-result').textContent='0';document.getElementById('calc-expr').textContent='';}
-function calcToggle(){calcExpr=String(-parseFloat(calcExpr));document.getElementById('calc-result').textContent=calcExpr;}
-function calcPercent(){calcExpr=String(parseFloat(calcExpr)/100);document.getElementById('calc-result').textContent=calcExpr;}
-
-// ─── IMAGE VIEWER ─────────────────────────────────────
-let imgZoom=1,imgRotDeg=0,imgFlipX=false;
-function buildImgViewer(){return`<div id="imgviewer-content"><div id="imgviewer-main"><div style="text-align:center;color:var(--text-dim);padding:24px"><div style="font-size:52px;margin-bottom:12px">🖼️</div><div>Drop an image here or click Open</div><input type="file" accept="image/*" id="img-file-input" style="display:none" onchange="loadImgFile(this)"><button onclick="document.getElementById('img-file-input').click()" style="margin-top:12px;background:var(--accent);border:none;color:#fff;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit">Open Image</button></div></div><div id="imgviewer-bar"><button class="viewer-btn" onclick="imgZoomIn()" title="Zoom In">+</button><button class="viewer-btn" onclick="imgZoomOut()" title="Zoom Out">−</button><button class="viewer-btn" onclick="imgReset()" title="Reset">⊡</button><button class="viewer-btn" onclick="imgRotate()" title="Rotate">↻</button><button class="viewer-btn" onclick="imgFlipImg()" title="Flip">⇄</button><span id="img-zoom-label" style="font-size:12px;color:var(--text-dim);margin:0 8px">100%</span></div></div>`;}
-function loadImgFile(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const m=document.getElementById('imgviewer-main');if(m){m.innerHTML=`<img id="imgviewer-img" src="${e.target.result}" style="max-width:100%;max-height:100%;object-fit:contain;transition:transform .2s">`;imgZoom=1;imgRotDeg=0;imgFlipX=false;document.getElementById('img-zoom-label').textContent='100%';}};r.readAsDataURL(f);}
-function updateImgTransform(){const img=document.getElementById('imgviewer-img');if(img){img.style.transform=`scale(${imgZoom}) rotate(${imgRotDeg}deg) scaleX(${imgFlipX?-1:1})`;document.getElementById('img-zoom-label').textContent=Math.round(imgZoom*100)+'%';}}
-function imgZoomIn(){imgZoom=Math.min(5,imgZoom+0.25);updateImgTransform();}
-function imgZoomOut(){imgZoom=Math.max(0.2,imgZoom-0.25);updateImgTransform();}
-function imgReset(){imgZoom=1;imgRotDeg=0;imgFlipX=false;updateImgTransform();}
-function imgRotate(){imgRotDeg=(imgRotDeg+90)%360;updateImgTransform();}
-function imgFlipImg(){imgFlipX=!imgFlipX;updateImgTransform();}
-
-// ─── SNAKE ────────────────────────────────────────────
-let snakeGame={},snakeRunning=false,snakeAnimFrame=null;
-function buildSnake(){return`<div id="snake-wrap"><div style="display:flex;align-items:center;gap:14px;margin-bottom:4px"><span id="snake-score" style="font-size:14px;font-weight:700">Score: 0</span><span id="snake-high" style="font-size:12px;color:var(--text-dim)">Best: 0</span><select id="difficulty-select" class="settings-select"><option value="150">Easy 🟢</option><option value="100" selected>Medium 🟡</option><option value="60">Hard 🔴</option><option value="35">Insane 💀</option></select></div><canvas id="snake-canvas" width="320" height="320" style="border:2px solid var(--border);border-radius:8px"></canvas><div style="display:flex;gap:8px;align-items:center"><button class="game-btn" onclick="startSnake()">▶ Start</button><button class="game-btn" onclick="if(snakeGame)snakeGame.paused=!snakeGame.paused">⏸ Pause</button></div><div style="font-size:11px;color:var(--text-dim)">Arrow keys / WASD to move</div></div>`;}
-function initSnake(){const c=document.getElementById('snake-canvas');if(!c)return;const ctx=c.getContext('2d');ctx.fillStyle='#0b0b16';ctx.fillRect(0,0,320,320);ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='16px Cantarell,sans-serif';ctx.textAlign='center';ctx.fillText('Press Start to Play 🐍',160,160);document.addEventListener('keydown',snakeKeyDown);}
-function startSnake(){const speed=parseInt(document.getElementById('difficulty-select')?.value||100);snakeGame={snake:[{x:10,y:10}],dir:{x:1,y:0},food:randomFood(),score:0,speed,best:snakeGame.best||0,paused:false};snakeRunning=true;if(snakeAnimFrame)clearTimeout(snakeAnimFrame);snakeLoop();}
-function snakeLoop(){if(!snakeRunning)return;if(!snakeGame.paused)moveSnake();drawSnake();snakeAnimFrame=setTimeout(snakeLoop,snakeGame.speed);}
-function moveSnake(){const g=snakeGame;const head={x:g.snake[0].x+g.dir.x,y:g.snake[0].y+g.dir.y};if(head.x<0||head.x>=20||head.y<0||head.y>=20||g.snake.some(s=>s.x===head.x&&s.y===head.y)){snakeRunning=false;const c=document.getElementById('snake-canvas');if(c){const ctx=c.getContext('2d');ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(0,0,320,320);ctx.fillStyle='#ff6b6b';ctx.font='20px Cantarell,sans-serif';ctx.textAlign='center';ctx.fillText('Game Over!',160,150);ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='15px Cantarell';ctx.fillText('Score: '+g.score,160,180);}showNotif('🐍','Game Over','Score: '+g.score);return;}g.snake.unshift(head);if(head.x===g.food.x&&head.y===g.food.y){g.score+=10;g.food=randomFood();if(g.score>g.best)g.best=g.score;document.getElementById('snake-score').textContent='Score: '+g.score;document.getElementById('snake-high').textContent='Best: '+g.best;}else g.snake.pop();}
-function drawSnake(){const c=document.getElementById('snake-canvas');if(!c)return;const ctx=c.getContext('2d');const g=snakeGame;const cs=16;ctx.fillStyle='#0b0b16';ctx.fillRect(0,0,320,320);ctx.strokeStyle='rgba(255,255,255,.03)';for(let x=0;x<20;x++)for(let y=0;y<20;y++)ctx.strokeRect(x*cs,y*cs,cs,cs);g.snake.forEach((s,i)=>{ctx.globalAlpha=i===0?1:Math.max(0.3,1-i*0.04);ctx.fillStyle=i===0?'#6bcb77':'#4aab55';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(s.x*cs+1,s.y*cs+1,cs-2,cs-2,3);else ctx.rect(s.x*cs+1,s.y*cs+1,cs-2,cs-2);ctx.fill();});ctx.globalAlpha=1;ctx.fillStyle='#ff6b6b';ctx.beginPath();ctx.arc(g.food.x*cs+cs/2,g.food.y*cs+cs/2,cs/2-2,0,Math.PI*2);ctx.fill();}
-function randomFood(){return{x:Math.floor(Math.random()*20),y:Math.floor(Math.random()*20)};}
-function snakeKeyDown(e){if(!snakeGame?.dir)return;const map={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},KeyW:{x:0,y:-1},KeyS:{x:0,y:1},KeyA:{x:-1,y:0},KeyD:{x:1,y:0}};const nd=map[e.code];if(nd&&!(nd.x===-snakeGame.dir.x&&nd.y===-snakeGame.dir.y)){snakeGame.dir=nd;e.preventDefault();}}
-
-// ─── TETRIS ───────────────────────────────────────────
-let tetrisGame={},tetrisRunning=false,tetrisAnimFrame=null;
-const PIECES=[{shape:[[1,1,1,1]],color:'#5e81f4'},{shape:[[1,1],[1,1]],color:'#ffd93d'},{shape:[[0,1,0],[1,1,1]],color:'#c77dff'},{shape:[[1,0,0],[1,1,1]],color:'#ff6b6b'},{shape:[[0,0,1],[1,1,1]],color:'#48cfad'},{shape:[[1,1,0],[0,1,1]],color:'#fd79a8'},{shape:[[0,1,1],[1,1,0]],color:'#6bcb77'}];
-function buildTetris(){return`<div id="tetris-wrap"><canvas id="tetris-canvas" width="180" height="360" style="border:2px solid var(--border);border-radius:8px"></canvas><div id="tetris-side"><div style="font-size:11px;font-weight:700;color:var(--text-dim)">NEXT</div><canvas id="tetris-next-canvas" width="90" height="90" style="border:1px solid var(--border);border-radius:6px"></canvas><div class="tetris-stat"><div class="tetris-stat-label">SCORE</div><div class="tetris-stat-val" id="tet-score">0</div></div><div class="tetris-stat"><div class="tetris-stat-label">LEVEL</div><div class="tetris-stat-val" id="tet-level">1</div></div><div class="tetris-stat"><div class="tetris-stat-label">LINES</div><div class="tetris-stat-val" id="tet-lines">0</div></div><select id="tet-difficulty" class="settings-select"><option value="800">Easy 🟢</option><option value="500" selected>Normal 🟡</option><option value="250">Hard 🔴</option><option value="100">Expert 💀</option></select><button class="game-btn" onclick="startTetris()">▶ Start</button><button class="game-btn" onclick="if(tetrisGame)tetrisGame.paused=!tetrisGame.paused">⏸ Pause</button></div></div>`;}
-function initTetris(){const c=document.getElementById('tetris-canvas');if(c){const ctx=c.getContext('2d');ctx.fillStyle='#0b0b16';ctx.fillRect(0,0,180,360);ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='13px Cantarell';ctx.textAlign='center';ctx.fillText('Press Start',90,180);}document.addEventListener('keydown',tetrisKey);}
-function startTetris(){tetrisGame={board:Array.from({length:20},()=>Array(10).fill(0)),score:0,level:1,lines:0,speed:parseInt(document.getElementById('tet-difficulty').value),paused:false};tetrisGame.cur=newTetPiece();tetrisGame.next=newTetPiece();tetrisRunning=true;if(tetrisAnimFrame)clearTimeout(tetrisAnimFrame);tetrisLoop();}
-function tetrisLoop(){if(!tetrisRunning)return;if(!tetrisGame.paused)tetrisStep();drawTetris();tetrisAnimFrame=setTimeout(tetrisLoop,tetrisGame.speed);}
-function newTetPiece(){const p=PIECES[Math.floor(Math.random()*PIECES.length)];return{shape:p.shape.map(r=>[...r]),color:p.color,x:4,y:0};}
-function tetrisStep(){const g=tetrisGame;g.cur.y++;if(tetCollides(g.cur)){g.cur.y--;placeTet();clearLines();g.cur=g.next;g.next=newTetPiece();if(tetCollides(g.cur)){tetrisRunning=false;showNotif('🟥','Tetris','Game Over! Score: '+g.score);}}}
-function tetCollides(p){return p.shape.some((row,r)=>row.some((v,c)=>{if(!v)return false;const nx=p.x+c,ny=p.y+r;return nx<0||nx>=10||ny>=20||(ny>=0&&tetrisGame.board[ny][nx]);}));}
-function placeTet(){const g=tetrisGame;g.cur.shape.forEach((row,r)=>row.forEach((v,c)=>{if(v&&g.cur.y+r>=0)g.board[g.cur.y+r][g.cur.x+c]=g.cur.color;}));}
-function clearLines(){const g=tetrisGame;let cleared=0;g.board=g.board.filter(row=>{if(row.every(v=>v)){cleared++;return false;}return true;});while(g.board.length<20)g.board.unshift(Array(10).fill(0));if(cleared){g.lines+=cleared;g.score+=cleared*100*g.level;g.level=Math.floor(g.lines/10)+1;g.speed=Math.max(80,parseInt(document.getElementById('tet-difficulty')?.value||500)-g.level*25);document.getElementById('tet-score').textContent=g.score;document.getElementById('tet-level').textContent=g.level;document.getElementById('tet-lines').textContent=g.lines;}}
-function drawTetris(){const c=document.getElementById('tetris-canvas');if(!c||!tetrisGame.board)return;const ctx=c.getContext('2d');const cs=18;const g=tetrisGame;ctx.fillStyle='#0b0b16';ctx.fillRect(0,0,180,360);ctx.strokeStyle='rgba(255,255,255,.04)';for(let x=0;x<10;x++)for(let y=0;y<20;y++)ctx.strokeRect(x*cs,y*cs,cs,cs);g.board.forEach((row,y)=>row.forEach((v,x)=>{if(v){ctx.fillStyle=v;if(ctx.roundRect){ctx.beginPath();ctx.roundRect(x*cs+1,y*cs+1,cs-2,cs-2,2);ctx.fill();}else{ctx.fillRect(x*cs+1,y*cs+1,cs-2,cs-2);}}}));if(g.cur){let ghost={...g.cur,shape:g.cur.shape};while(!tetCollides({...ghost,y:ghost.y+1}))ghost.y++;ghost.shape.forEach((row,r)=>row.forEach((v,c2)=>{if(v){ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect((ghost.x+c2)*cs+1,(ghost.y+r)*cs+1,cs-2,cs-2);}}));g.cur.shape.forEach((row,r)=>row.forEach((v,c2)=>{if(v){ctx.fillStyle=g.cur.color;if(ctx.roundRect){ctx.beginPath();ctx.roundRect((g.cur.x+c2)*cs+1,(g.cur.y+r)*cs+1,cs-2,cs-2,2);ctx.fill();}else ctx.fillRect((g.cur.x+c2)*cs+1,(g.cur.y+r)*cs+1,cs-2,cs-2);}}));}const nc=document.getElementById('tetris-next-canvas');if(!nc)return;const nctx=nc.getContext('2d');nctx.fillStyle='#0b0b16';nctx.fillRect(0,0,90,90);if(g.next)g.next.shape.forEach((row,r)=>row.forEach((v,c2)=>{if(v){nctx.fillStyle=g.next.color;nctx.fillRect(c2*20+15,r*20+20,18,18);}}));}
-function tetrisKey(e){if(!tetrisGame?.cur)return;const c=tetrisGame.cur;if(e.code==='ArrowLeft'){c.x--;if(tetCollides(c))c.x++;}else if(e.code==='ArrowRight'){c.x++;if(tetCollides(c))c.x--;}else if(e.code==='ArrowDown'){tetrisStep();}else if(e.code==='ArrowUp'||e.code==='KeyX'){const rot=c.shape[0].map((_,i)=>c.shape.map(r=>r[i]).reverse());const old=c.shape;c.shape=rot;if(tetCollides(c))c.shape=old;}else if(e.code==='Space'){while(!tetCollides({...c,y:c.y+1}))c.y++;tetrisStep();}if(['ArrowLeft','ArrowRight','ArrowDown','ArrowUp','Space'].includes(e.code))e.preventDefault();drawTetris();}
-
-// ─── MEMORY GAME ──────────────────────────────────────
-let memCards=[],memFlipped=[],memMatched=[],memLocked=false,memMoves=0;
-const MEM_EMOJIS=['🌟','🎮','🚀','🐍','🎵','🦄','🔥','💎'];
-function buildMemory(){return`<div id="memory-wrap"><div style="display:flex;gap:16px;align-items:center"><span style="font-size:14px;font-weight:700">Moves: <span id="mem-moves">0</span></span><span style="font-size:14px;font-weight:700">Pairs: <span id="mem-pairs">0</span>/8</span><select id="mem-difficulty" class="settings-select"><option value="2000">Easy</option><option value="1000" selected>Normal</option><option value="500">Hard</option></select><button class="game-btn" onclick="initMemory()">↺ Reset</button></div><div id="memory-grid"></div></div>`;}
-function initMemory(){const emojis=[...MEM_EMOJIS,...MEM_EMOJIS].sort(()=>Math.random()-.5);memCards=emojis;memFlipped=[];memMatched=[];memLocked=false;memMoves=0;document.getElementById('mem-moves').textContent='0';document.getElementById('mem-pairs').textContent='0';const g=document.getElementById('memory-grid');if(!g)return;g.innerHTML=emojis.map((e,i)=>`<div class="mem-card" id="mc${i}" onclick="flipMemCard(${i})"><span id="mce${i}" style="display:none">${e}</span></div>`).join('');}
-function flipMemCard(i){if(memLocked||memFlipped.includes(i)||memMatched.includes(i))return;const c=document.getElementById(`mc${i}`);const ic=document.getElementById(`mce${i}`);if(!c||!ic)return;c.classList.add('flipped');ic.style.display='block';memFlipped.push(i);if(memFlipped.length===2){memMoves++;document.getElementById('mem-moves').textContent=memMoves;memLocked=true;const[a,b]=memFlipped;const delay=parseInt(document.getElementById('mem-difficulty')?.value||1000);if(memCards[a]===memCards[b]){memMatched.push(a,b);[a,b].forEach(idx=>{document.getElementById(`mc${idx}`)?.classList.add('matched');});memFlipped=[];memLocked=false;document.getElementById('mem-pairs').textContent=memMatched.length/2;if(memMatched.length===16)showNotif('🃏','Solved!','Memory game done in '+memMoves+' moves 🎉');}else{setTimeout(()=>{memFlipped.forEach(idx=>{const c2=document.getElementById(`mc${idx}`);const i2=document.getElementById(`mce${idx}`);c2?.classList.remove('flipped');if(i2)i2.style.display='none';});memFlipped=[];memLocked=false;},delay);}}}
-
-// ─── NOTIFICATIONS ────────────────────────────────────
-let notifTimer=null;
-function showNotif(icon,title,msg){document.getElementById('notif-icon').textContent=icon;document.getElementById('notif-title').textContent=title;document.getElementById('notif-msg').textContent=msg;const n=document.getElementById('notification');n.classList.add('show');if(notifTimer)clearTimeout(notifTimer);notifTimer=setTimeout(()=>n.classList.remove('show'),3500);}
-
-// ─── CONTEXT MENU ─────────────────────────────────────
-function showContextMenu(e){if(e.target.closest('.window')||e.target.closest('#topbar')||e.target.closest('#dock'))return;e.preventDefault();const cm=document.getElementById('context-menu');cm.style.left=Math.min(e.clientX,window.innerWidth-190)+'px';cm.style.top=Math.min(e.clientY,window.innerHeight-200)+'px';cm.classList.add('show');}
-function ctxAction(a){document.getElementById('context-menu').classList.remove('show');if(a==='terminal')openApp('terminal');else if(a==='files')openApp('files');else if(a==='settings')openApp('settings');else if(a==='wallpaper'){openApp('settings');setTimeout(()=>switchSettings('appearance',document.querySelector('.settings-nav')),200);}else if(a==='screenshot')showNotif('📸','Screenshot','Captured to clipboard');}
-</script>
+<!-- JS FILES -->
+<script src="js/core.js"></script>
+<script src="js/filesystem.js"></script>
+<script src="js/windows.js"></script>
+<script src="js/terminal.js"></script>
+<script src="js/apps-editors.js"></script>
+<script src="js/apps-media.js"></script>
+<script src="js/apps-tools.js"></script>
+<script src="js/apps-postman.js"></script>
+<script src="js/apps-paint.js"></script>
+<script src="js/apps-system.js"></script>
+<script src="js/games.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/init.js"></script>
 </body>
 </html>
