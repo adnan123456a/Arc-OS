@@ -28,16 +28,21 @@ body { font-family:'Cantarell','Nunito',sans-serif; background:var(--bg); color:
     radial-gradient(ellipse 60% 50% at 50% 90%,rgba(72,207,173,.15) 0,transparent 45%),
     linear-gradient(155deg,#05050f 0%,#0b0b1e 30%,#10112a 60%,#080f22 100%);
 }
-/* Photo layer — sits ABOVE gradient but BELOW star pseudo-elements */
+/* Photo layer — lives INSIDE #wallpaper, covers gradient */
 #wallpaper-photo {
-  position:absolute; inset:0; z-index:1;
-  background-size:cover; background-position:center; background-repeat:no-repeat;
-  opacity:0; transition:opacity .9s ease;
+  position:absolute; inset:0;
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  opacity:0;
+  transition:opacity 1s ease;
+  z-index:2;
 }
 #wallpaper-photo.loaded { opacity:1; }
-/* Star field — only shows when no photo active */
+
+/* Star field — z-index:3 so it overlays gradient but fades on photo */
 #wallpaper::before {
-  content:''; position:absolute; inset:0; z-index:2;
+  content:''; position:absolute; inset:0; z-index:3;
   background-image:
     radial-gradient(circle,rgba(255,255,255,.7) 1px,transparent 1px),
     radial-gradient(circle,rgba(255,255,255,.4) 1px,transparent 1px),
@@ -46,19 +51,22 @@ body { font-family:'Cantarell','Nunito',sans-serif; background:var(--bg); color:
   background-position: 0 0, 100px 150px, 250px 80px;
   opacity:.22; pointer-events:none;
   animation: twinkle 8s ease-in-out infinite alternate;
-  transition: opacity .9s ease;
+  transition: opacity 1s ease;
 }
-#wallpaper.has-photo::before { opacity:0; }
-/* Nebula glow overlay */
+#wallpaper.has-photo::before { opacity:0 !important; }
+
+/* Nebula — z-index:4, fades on photo */
 #wallpaper::after {
-  content:''; position:absolute; inset:0; z-index:3;
+  content:''; position:absolute; inset:0; z-index:4;
   background:
     radial-gradient(ellipse 40% 30% at 25% 40%, rgba(94,129,244,.12) 0, transparent 70%),
     radial-gradient(ellipse 30% 25% at 75% 65%, rgba(199,125,255,.1) 0, transparent 70%);
   animation: nebulaShift 15s ease-in-out infinite alternate;
-  pointer-events:none; transition: opacity .9s ease;
+  pointer-events:none;
+  transition: opacity 1s ease;
 }
-#wallpaper.has-photo::after { opacity:0; }
+#wallpaper.has-photo::after { opacity:0 !important; }
+
 @keyframes twinkle { 0%{opacity:.18} 100%{opacity:.28} }
 @keyframes nebulaShift { 0%{transform:scale(1) translate(0,0)} 100%{transform:scale(1.05) translate(1%,1%)} }
 

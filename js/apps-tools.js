@@ -154,53 +154,139 @@ function startSysMon() {
 }
 
 // ─── SETTINGS ──────────────────────────────────────────
+// Photo wallpapers used in settings panel
+const SETTINGS_WALLPAPERS = [
+  { key:'wp-galaxy',    label:'Galaxy',     url:'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=1920&q=85', thumb:'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=600&q=80' },
+  { key:'wp-aurora',   label:'Aurora',      url:'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1920&q=85', thumb:'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&q=80' },
+  { key:'wp-mountain', label:'Mountains',   url:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=85', thumb:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80' },
+  { key:'wp-ocean',    label:'Ocean',       url:'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1920&q=85', thumb:'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&q=80' },
+  { key:'wp-forest',   label:'Forest',      url:'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1920&q=85', thumb:'https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=80' },
+  { key:'wp-city',     label:'City Night',  url:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1920&q=85', thumb:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=80' },
+  { key:'wp-desert',   label:'Desert',      url:'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1920&q=85', thumb:'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&q=80' },
+  { key:'wp-abstract', label:'Abstract',    url:'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=1920&q=85', thumb:'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&q=80' },
+  { key:'wp-night',    label:'Starry Night',url:'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&q=85', thumb:'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&q=80' },
+  { key:'wp-volcano',  label:'Volcano',     url:'https://images.unsplash.com/photo-1611095560587-e36d83f63b38?w=1920&q=85', thumb:'https://images.unsplash.com/photo-1611095560587-e36d83f63b38?w=600&q=80' },
+  { key:'wp-snow',     label:'Snow Peak',   url:'https://images.unsplash.com/photo-1491555103944-7c647fd857e6?w=1920&q=85', thumb:'https://images.unsplash.com/photo-1491555103944-7c647fd857e6?w=600&q=80' },
+  { key:'wp-lake',     label:'Lake',        url:'https://images.unsplash.com/photo-1439853949212-36589f9bcc06?w=1920&q=85', thumb:'https://images.unsplash.com/photo-1439853949212-36589f9bcc06?w=600&q=80' },
+];
+
 function buildSettings() {
   return `<div id="settings-content">
     <div id="settings-sidebar">
-      <div class="settings-nav active" onclick="switchSettings('appearance',this)">🎨 Appearance</div>
-      <div class="settings-nav" onclick="switchSettings('display',this)">🖥️ Display</div>
+      <div style="padding:16px 14px 10px;border-bottom:1px solid var(--border)">
+        <div style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#5e81f4,#c77dff);margin:0 auto 8px;display:flex;align-items:center;justify-content:center">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div style="text-align:center;font-weight:700;font-size:13px">User</div>
+        <div style="text-align:center;font-size:11px;color:var(--text-dim)">ArcOS Desktop</div>
+      </div>
+      <div class="settings-nav active" onclick="switchSettings('wallpaper',this)">🖼️ Wallpaper</div>
+      <div class="settings-nav" onclick="switchSettings('appearance',this)">🎨 Appearance</div>
+      <div class="settings-nav" onclick="switchSettings('windows',this)">🪟 Windows & Tiling</div>
+      <div class="settings-nav" onclick="switchSettings('desktops',this)">🖥️ Virtual Desktops</div>
       <div class="settings-nav" onclick="switchSettings('sound',this)">🔊 Sound</div>
       <div class="settings-nav" onclick="switchSettings('network',this)">📡 Network</div>
       <div class="settings-nav" onclick="switchSettings('about',this)">ℹ️ About</div>
     </div>
     <div id="settings-main">
-      <div class="settings-section active" id="settings-appearance">
+
+      <!-- WALLPAPER -->
+      <div class="settings-section active" id="settings-wallpaper">
+        <h3 style="margin-bottom:4px">Wallpaper</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">Click any photo to apply it as your desktop background.</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          ${SETTINGS_WALLPAPERS.map(w=>`
+            <div onclick="settingsApplyWallpaper('${w.url}','${w.key}')"
+              id="wpthumb-${w.key}"
+              style="cursor:pointer;border-radius:12px;overflow:hidden;border:2px solid var(--border);aspect-ratio:16/9;position:relative;background:#1a1a2e;transition:all .18s"
+              onmouseover="this.style.borderColor='var(--accent)';this.style.transform='scale(1.03)'"
+              onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+              <img src="${w.thumb}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"
+                onerror="this.style.display='none'">
+              <div style="position:absolute;bottom:0;left:0;right:0;padding:6px 8px;background:linear-gradient(transparent,rgba(0,0,0,.85));font-size:11px;font-weight:700;color:rgba(255,255,255,.95)">${w.label}</div>
+              <div id="wpcheck-${w.key}" style="display:none;position:absolute;top:6px;right:6px;background:var(--accent);border-radius:50%;width:20px;height:20px;align-items:center;justify-content:center;font-size:12px">✓</div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- APPEARANCE -->
+      <div class="settings-section" id="settings-appearance">
         <h3 style="margin-bottom:14px">Appearance</h3>
         <div class="settings-group">
-          <div class="settings-row"><div class="settings-label">Dark Mode<small>System-wide dark theme</small></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
           <div class="settings-row"><div class="settings-label">Blur Effects</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
           <div class="settings-row"><div class="settings-label">Animations</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
         </div>
         <div class="settings-group">
           <div class="settings-row">
             <div class="settings-label">Accent Color</div>
-            <div style="display:flex;gap:7px">
-              ${['#5e81f4','#c77dff','#48cfad','#ff6b6b','#ffd93d','#fd79a8','#ff9f43'].map(c =>
-                `<div style="width:22px;height:22px;border-radius:50%;background:${c};cursor:pointer;border:2px solid rgba(255,255,255,.15);transition:transform .15s" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform=''" onclick="changeAccent('${c}')"></div>`
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              ${['#5e81f4','#c77dff','#48cfad','#ff6b6b','#ffd93d','#fd79a8','#ff9f43','#00d4d8','#a9e34b'].map(c=>
+                `<div style="width:24px;height:24px;border-radius:50%;background:${c};cursor:pointer;border:2px solid rgba(255,255,255,.15);transition:transform .15s" onmouseover="this.style.transform='scale(1.25)'" onmouseout="this.style.transform=''" onclick="changeAccent('${c}')"></div>`
               ).join('')}
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- WINDOWS & TILING -->
+      <div class="settings-section" id="settings-windows">
+        <h3 style="margin-bottom:4px">Windows & Tiling</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">Tile all open windows. Also accessible via <kbd style="background:var(--card);padding:2px 6px;border-radius:4px;font-size:11px">Ctrl+Shift+T</kbd></p>
         <div class="settings-group">
-          <div class="settings-row">
-            <div class="settings-label">Wallpaper Style</div>
-            <select class="settings-select" onchange="changeWallpaper(this.value)">
-              <option value="default">Nebula (Default)</option>
-              <option value="ocean">Deep Ocean</option>
-              <option value="forest">Forest</option>
-              <option value="sunset">Sunset</option>
-              <option value="space">Deep Space</option>
-              <option value="cyberpunk">Cyberpunk</option>
-            </select>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            ${[
+              ['2col','Two Columns','⬜⬜','Split screen left/right'],
+              ['3col','Three Columns','▪▪▪','Three equal columns'],
+              ['quad','Quad Grid','⊞','Four windows in grid'],
+              ['main','Main + Side','▊▌','Large left, stack right'],
+              ['full','Fullscreen','⬛','Active window fills screen'],
+            ].map(([mode,label,icon,desc])=>`
+              <div onclick="tileWindows('${mode}');showNotif('🪟','Tiling','${label} applied')"
+                style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 12px;cursor:pointer;text-align:center;transition:all .15s"
+                onmouseover="this.style.borderColor='var(--accent)';this.style.background='rgba(94,129,244,.1)'"
+                onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">
+                <div style="font-size:26px;margin-bottom:6px">${icon}</div>
+                <div style="font-weight:700;font-size:13px;margin-bottom:3px">${label}</div>
+                <div style="font-size:10px;color:var(--text-dim)">${desc}</div>
+              </div>`).join('')}
+            <div onclick="untileAll();showNotif('🪟','Tiling','Windows floating')"
+              style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 12px;cursor:pointer;text-align:center;transition:all .15s"
+              onmouseover="this.style.borderColor='rgba(255,107,107,.6)';this.style.background='rgba(255,107,107,.08)'"
+              onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">
+              <div style="font-size:26px;margin-bottom:6px">🌊</div>
+              <div style="font-weight:700;font-size:13px;margin-bottom:3px">Float All</div>
+              <div style="font-size:10px;color:var(--text-dim)">Restore free movement</div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-row"><div class="settings-label">Snap to edges<small>Drag window to edge to snap</small></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="settings-row"><div class="settings-label">Show snap preview</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+      </div>
+
+      <!-- VIRTUAL DESKTOPS -->
+      <div class="settings-section" id="settings-desktops">
+        <h3 style="margin-bottom:4px">Virtual Desktops</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">Switch between workspaces. Also <kbd style="background:var(--card);padding:2px 6px;border-radius:4px;font-size:11px">Ctrl+1–4</kbd></p>
+        <div class="settings-group">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px" id="settings-desk-grid">
+            ${Array.from({length:4},(_,i)=>`
+              <div onclick="switchDesktop(${i+1});showNotif('🖥️','Desktop','Switched to Desktop ${i+1}')"
+                id="settings-desk-${i+1}"
+                style="background:var(--card);border:2px solid ${typeof currentDesktop!=='undefined'&&currentDesktop===i+1?'var(--accent)':'var(--border)'};border-radius:12px;padding:18px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s"
+                onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='${typeof currentDesktop!=='undefined'&&currentDesktop===i+1?'var(--accent)':'var(--border)'}'">
+                <div style="width:40px;height:30px;border-radius:6px;border:1.5px solid var(--border);background:rgba(94,129,244,.1);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--accent);flex-shrink:0">${i+1}</div>
+                <div>
+                  <div style="font-weight:700;font-size:13px">Desktop ${i+1}</div>
+                  <div style="font-size:11px;color:var(--text-dim)">${typeof desktopWindows!=='undefined'&&desktopWindows[i+1]?.size>0?desktopWindows[i+1].size+' window(s) open':'Empty'}</div>
+                </div>
+              </div>`).join('')}
           </div>
         </div>
       </div>
-      <div class="settings-section" id="settings-display">
-        <h3 style="margin-bottom:14px">Display</h3>
-        <div class="settings-group">
-          <div class="settings-row"><div class="settings-label">Night Light<small>Reduce blue light</small></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
-        </div>
-      </div>
+
+      <!-- SOUND -->
       <div class="settings-section" id="settings-sound">
         <h3 style="margin-bottom:14px">Sound</h3>
         <div class="settings-group">
@@ -208,6 +294,8 @@ function buildSettings() {
           <div class="settings-row"><div class="settings-label">System Sounds</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
         </div>
       </div>
+
+      <!-- NETWORK -->
       <div class="settings-section" id="settings-network">
         <h3 style="margin-bottom:14px">Network</h3>
         <div class="settings-group">
@@ -215,39 +303,43 @@ function buildSettings() {
           <div class="settings-row"><div class="settings-label">Bluetooth</div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
         </div>
       </div>
+
+      <!-- ABOUT -->
       <div class="settings-section" id="settings-about">
         <h3 style="margin-bottom:14px">About ArcOS</h3>
         <div class="settings-group">
-          <div class="settings-row"><div class="settings-label">OS</div><div style="font-size:12px;color:var(--text-dim)">ArcOS 6.2.0</div></div>
-          <div class="settings-row"><div class="settings-label">Kernel</div><div style="font-size:12px;color:var(--text-dim)">6.2.0-arcos-desktop</div></div>
-          <div class="settings-row"><div class="settings-label">Shell</div><div style="font-size:12px;color:var(--text-dim)">arcsh 2.1</div></div>
-          <div class="settings-row"><div class="settings-label">Desktop</div><div style="font-size:12px;color:var(--text-dim)">ArcGNOME 44.2</div></div>
-          <div class="settings-row"><div class="settings-label">Apps</div><div style="font-size:12px;color:var(--text-dim)">${APP_DEFS ? APP_DEFS.length : '24'} installed</div></div>
+          <div class="settings-row"><div class="settings-label">Version</div><div style="font-size:12px;color:var(--text-dim)">ArcOS v3.0</div></div>
+          <div class="settings-row"><div class="settings-label">Kernel</div><div style="font-size:12px;color:var(--text-dim)">6.2.0-arcos</div></div>
+          <div class="settings-row"><div class="settings-label">Apps Installed</div><div style="font-size:12px;color:var(--text-dim)">${typeof APP_DEFS!=='undefined'?APP_DEFS.length:'48'}</div></div>
           <div class="settings-row"><div class="settings-label">Memory</div><div style="font-size:12px;color:var(--text-dim)">∞ GB RAM</div></div>
         </div>
       </div>
+
     </div>
   </div>`;
 }
+
+function settingsApplyWallpaper(url, key) {
+  // Mark selected
+  document.querySelectorAll('[id^="wpcheck-"]').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('[id^="wpthumb-"]').forEach(el => el.style.borderColor = 'var(--border)');
+  const check = document.getElementById('wpcheck-' + key);
+  const thumb = document.getElementById('wpthumb-' + key);
+  if (check) check.style.display = 'flex';
+  if (thumb) thumb.style.borderColor = 'var(--accent)';
+  // Apply via the photo layer
+  applyPhotoWallpaper(url, key);
+  showNotif('🖼️', 'Wallpaper', 'Applying…');
+}
+
 function switchSettings(id, btn) {
   document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.settings-nav').forEach(n => n.classList.remove('active'));
   document.getElementById('settings-' + id)?.classList.add('active');
   btn?.classList.add('active');
 }
-function changeAccent(c) { document.documentElement.style.setProperty('--accent', c); showNotif('🎨', 'Accent Updated', 'Color applied'); }
-function changeWallpaper(w) {
-  const s = {
-    default:   'radial-gradient(ellipse 80% 60% at 15% 55%,rgba(94,129,244,.18) 0,transparent 60%),radial-gradient(ellipse 60% 50% at 85% 15%,rgba(199,125,255,.16) 0,transparent 55%),linear-gradient(150deg,#07071a,#0d0d1e 35%,#121228 65%,#0a1a35 100%)',
-    ocean:     'linear-gradient(150deg,#0077b6,#023e8a,#03045e)',
-    forest:    'linear-gradient(150deg,#1b4332,#2d6a4f,#40916c)',
-    sunset:    'linear-gradient(150deg,#f8961e,#f3722c,#d62828,#6d023c)',
-    space:     'linear-gradient(150deg,#000000,#0a0a1a,#0d0d2e)',
-    cyberpunk: 'linear-gradient(150deg,#0d0221,#1a0a2e,#2d1b4e,#0d1421)',
-  };
-  document.getElementById('wallpaper').style.background = s[w] || s.default;
-  showNotif('🎨', 'Wallpaper', 'Changed to ' + w);
-}
+function changeAccent(c) { document.documentElement.style.setProperty('--accent', c); showNotif('🎨', 'Accent', 'Color updated'); }
+function changeWallpaper(w) { applyWallpaperStyle(w); }
 
 // ─── GITHUB ────────────────────────────────────────────
 function buildGithub() {
@@ -262,11 +354,11 @@ function buildGithub() {
     <div id="github-header">
       <svg width="32" height="32" viewBox="0 0 98 96" fill="white"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg>
       <div><div style="font-weight:700;font-size:16px;color:#c9d1d9">GitHub Repos</div><div style="font-size:12px;color:#8b949e">Your open source projects</div></div>
-      <a href="https://github.com/adnan123456a" target="_blank" style="margin-left:auto;background:#238636;color:#fff;border:none;padding:7px 14px;border-radius:8px;text-decoration:none;font-size:12px;">Open GitHub ↗</a>
+      <a href="https://github.com" target="_blank" style="margin-left:auto;background:#238636;color:#fff;border:none;padding:7px 14px;border-radius:8px;text-decoration:none;font-size:12px;">Open GitHub ↗</a>
     </div>
     <div style="padding:12px 14px;overflow-y:auto;height:calc(100% - 72px)">
       ${repos.map(r => `
-        <div class="github-card" onclick="window.open('https://github.com/adnan123456a','_blank')">
+        <div class="github-card" onclick="window.open('https://github.com','_blank')">
           <div class="repo-name">📦 ${r.name}</div>
           <div class="repo-desc">${r.desc}</div>
           <div class="repo-meta">
@@ -345,7 +437,7 @@ function buildMarkdown() {
 }
 function initMarkdown() {
   const inp = document.getElementById('markdown-input');
-  if (inp) { inp.value = '# Welcome to ArcOS Markdown\n\nType **markdown** here and see a *live preview*!\n\n## Features\n- Bold, italic, lists\n- `code` blocks\n- > Blockquotes\n- [Links](https://github.com/adnan123456a)\n\n```javascript\nconsole.log("Hello!");\n```\n'; updateMarkdownPreview(); }
+  if (inp) { inp.value = '# Welcome to ArcOS Markdown\n\nType **markdown** here and see a *live preview*!\n\n## Features\n- Bold, italic, lists\n- `code` blocks\n- > Blockquotes\n- [Links](https://github.com)\n\n```javascript\nconsole.log("Hello!");\n```\n'; updateMarkdownPreview(); }
 }
 function updateMarkdownPreview() {
   const inp = document.getElementById('markdown-input');
