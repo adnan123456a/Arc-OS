@@ -50,9 +50,9 @@ function buildContent(id) {
     terminal:    buildTerminal,
     editor:      buildEditor,
     code:        buildCode,
-    browser:     buildBrowser,
+    browser:     () => typeof buildBrowser === 'function' ? buildBrowser() : '<div>Browser</div>',
     files:       buildFiles,
-    camera:      buildCamera,
+    camera:      () => typeof buildCamera === 'function' ? buildCamera() : '<div>Camera</div>',
     music:       buildMusic,
     imgviewer:   buildImgViewer,
     calculator:  buildCalculator,
@@ -72,20 +72,22 @@ function buildContent(id) {
     game2048:    build2048,
     minesweeper: buildMinesweeper,
     wordle:      buildWordle,
+    maps:        () => typeof buildMaps    === 'function' ? buildMaps()    : '<div style="padding:20px">Maps loading…</div>',
+    jwt:         () => typeof buildJwt     === 'function' ? buildJwt()     : '<div style="padding:20px">JWT loading…</div>',
   };
-  return map[id] ? map[id]() : `<div style="padding:20px;color:var(--text-dim)">App not found</div>`;
+  return map[id] ? map[id]() : `<div style="padding:20px;color:var(--text-dim)">App not found: ${id}</div>`;
 }
 
 function afterOpen(id) {
   if (id === 'clock')       startClockWidget();
   if (id === 'sysmon')      startSysMon();
-  if (id === 'camera')      initCamera();
+  if (id === 'camera')      setTimeout(() => typeof initCamera === 'function' && initCamera(), 80);
   if (id === 'snake')       initSnake();
   if (id === 'tetris')      initTetris();
   if (id === 'memory')      initMemory();
   if (id === 'music')       initMusic();
   if (id === 'code')        initCode();
-  if (id === 'browser')     initBrowser();
+  if (id === 'browser')     setTimeout(() => typeof updateBrowserTabs === 'function' && updateBrowserTabs(), 80);
   if (id === 'terminal')    initTerminal();
   if (id === 'youtube')     initYoutube();
   if (id === 'paint')       initPaint();
@@ -94,6 +96,7 @@ function afterOpen(id) {
   if (id === 'minesweeper') initMinesweeper();
   if (id === 'wordle')      initWordle();
   if (id === 'postman')     initPostman();
+  if (id === 'maps')        setTimeout(() => typeof initMaps === 'function' && initMaps(), 120);
 }
 
 function closeApp(id) {

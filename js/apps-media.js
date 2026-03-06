@@ -72,137 +72,233 @@ function takePhoto() {
 }
 
 // ─── MUSIC PLAYER ──────────────────────────────────────
-const musicTracks = [
-  { title:'Cosmic Journey', artist:'ArcOS Sounds', emoji:'🌌', hue:240 },
-  { title:'Neon Pulse',     artist:'Synthwave',    emoji:'💜', hue:280 },
-  { title:'Digital Rain',  artist:'Chill Bits',   emoji:'💚', hue:160 },
-  { title:'Orbit',         artist:'Space Audio',  emoji:'🔵', hue:200 },
-  { title:'Terminal Beat', artist:'Hacker Vibes', emoji:'🟡', hue:45  },
+// ╔══════════════════════════════════════════════════════╗
+// ║  TO ADD YOUR OWN SONGS — edit the `src` field below ║
+// ║  Paste any direct MP3/audio URL (must end in .mp3   ║
+// ║  or be a direct stream link, not a webpage link).   ║
+// ║  Cover art: any image URL (square looks best).      ║
+// ║  Example sources: archive.org, pixabay.com/music,   ║
+// ║  freemusicarchive.org, soundcloud (direct link)     ║
+// ╚══════════════════════════════════════════════════════╝
+const musicTracks = [  {
+    title:  'Winter 4 ever',
+    artist: 'Baby Jane',
+    cover:  'https://i.ytimg.com/vi/J3DfTc-nQ6U/0.jpg',
+    src:    'songs/Baby Jane - winter 4ever (Official Audio) - Baby Jane.mp3',
+    color:  ['#48cfad','#3dbda7'],
+  },
+  {
+    title:  'Love Story',
+    artist: 'Taylor Swift',
+    cover:  'https://i.ytimg.com/vi/8xg3vE8Ie_E/0.jpg',
+    src:    'songs/Taylor Swift - Love Story - Taylor Swift.mp3',
+    color:  ['#5e81f4','#c77dff'],
+  },
+
+  {
+    title:  ' Starry Eyed',
+    artist: 'Baby Jane',
+    cover:  'https://i.ytimg.com/vi/A7AiISHcA8A/0.jpg',
+    src:    'songs/Baby Jane - Starry Eyed (Official Video) - Baby Jane.mp3',
+    color:  ['#ff6b6b','#f06595'],
+  },
 ];
-let musicIdx = 0, musicPlaying = false, musicProgress = 0, musicTimer = null;
-let audioCtx = null;
+
+let musicIdx = 0, musicPlaying = false, musicProgress = 0;
+let _currentAudio = null;
 
 function buildMusic() {
+  const t = musicTracks[0];
   return `<div id="music-content">
-    <div id="music-art" style="background:linear-gradient(135deg,hsl(240,70%,55%),hsl(280,70%,65%))">🌌</div>
-    <div id="music-title" style="font-size:17px;font-weight:700;text-align:center">Cosmic Journey</div>
-    <div id="music-artist" style="color:var(--text-dim);font-size:13px">ArcOS Sounds</div>
-    <div style="font-size:11px;color:var(--text-dim);text-align:center;background:rgba(94,129,244,.1);border:1px solid rgba(94,129,244,.2);border-radius:8px;padding:6px 12px;max-width:280px">
-      🎵 Generative ambient music — synthesized tones.<br>Drag & drop an MP3 to play real audio.
+    <!-- Album art -->
+    <div id="music-art" style="background:linear-gradient(135deg,${t.color[0]},${t.color[1]})">
+      <img id="music-art-img" src="${t.cover}" style="width:100%;height:100%;object-fit:cover;border-radius:18px" onerror="this.style.display='none'">
     </div>
-    <div style="display:flex;align-items:center;gap:8px;width:100%;max-width:280px">
-      <span id="music-cur" style="font-size:11px;color:var(--text-dim)">0:00</span>
-      <input id="music-seek" type="range" min="0" max="100" value="0" oninput="musicSeek(this.value)">
-      <span id="music-dur" style="font-size:11px;color:var(--text-dim)">3:00</span>
+
+    <!-- Track info -->
+    <div style="text-align:center;width:100%">
+      <div id="music-title" style="font-size:18px;font-weight:800;margin-bottom:3px">${t.title}</div>
+      <div id="music-artist" style="color:var(--text-dim);font-size:13px">${t.artist}</div>
     </div>
-    <div id="music-controls" style="display:flex;align-items:center;gap:12px">
-      <button class="music-btn" onclick="musicPrev()">⏮</button>
-      <button class="music-btn" onclick="musicShuffle()">🔀</button>
+
+    <!-- Seek bar -->
+    <div style="display:flex;align-items:center;gap:10px;width:100%;max-width:300px">
+      <span id="music-cur" style="font-size:11px;color:var(--text-dim);min-width:34px">0:00</span>
+      <input id="music-seek" type="range" min="0" max="100" value="0" style="flex:1;accent-color:var(--accent);cursor:pointer" oninput="musicSeek(this.value)">
+      <span id="music-dur" style="font-size:11px;color:var(--text-dim);min-width:34px;text-align:right">0:00</span>
+    </div>
+
+    <!-- Controls -->
+    <div style="display:flex;align-items:center;gap:16px">
+      <button class="music-btn" onclick="musicPrev()" title="Previous">⏮</button>
+      <button class="music-btn" id="music-shuffle-btn" onclick="musicToggleShuffle()" title="Shuffle" style="font-size:18px;opacity:.5">🔀</button>
       <button class="music-btn play-btn" id="music-play" onclick="toggleMusic()">▶</button>
-      <button class="music-btn" onclick="musicRepeat()">🔁</button>
-      <button class="music-btn" onclick="musicNext()">⏭</button>
+      <button class="music-btn" id="music-repeat-btn" onclick="musicToggleRepeat()" title="Repeat" style="font-size:18px;opacity:.5">🔁</button>
+      <button class="music-btn" onclick="musicNext()" title="Next">⏭</button>
     </div>
-    <div style="width:100%;max-width:280px">
+
+    <!-- Volume -->
+    <div style="display:flex;align-items:center;gap:8px;width:100%;max-width:300px">
+      <span style="font-size:14px">🔈</span>
+      <input type="range" min="0" max="100" value="80" id="music-vol" style="flex:1;accent-color:var(--accent);cursor:pointer" oninput="musicSetVol(this.value)">
+      <span style="font-size:14px">🔊</span>
+    </div>
+
+    <!-- File upload -->
+    <div style="width:100%;max-width:300px">
       <input type="file" id="music-file-input" accept="audio/*" multiple style="display:none" onchange="loadMusicFile(this)">
-      <button onclick="document.getElementById('music-file-input').click()" style="width:100%;background:var(--card);border:1px dashed var(--border);color:var(--text-dim);padding:7px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit">📂 Open MP3 / Audio File</button>
+      <button onclick="document.getElementById('music-file-input').click()"
+        style="width:100%;background:var(--card);border:1px dashed var(--border);color:var(--text-dim);padding:8px;border-radius:10px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .15s"
+        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        📂 Add MP3 / Audio File
+      </button>
     </div>
-    <div class="music-list" id="music-list" style="width:100%;max-width:280px;max-height:130px;overflow-y:auto">
-      ${musicTracks.map((t, i) => `<div class="music-track${i===0?' active':''}" onclick="playTrack(${i})"><span style="font-size:16px">${t.emoji}</span>${t.title}<span style="margin-left:auto;color:var(--text-dim);font-size:11px">3:00</span></div>`).join('')}
+
+    <!-- Playlist -->
+    <div class="music-list" id="music-list" style="width:100%;max-width:300px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px">
+      ${musicTracks.map((t, i) => `
+        <div class="music-track${i===0?' active':''}" onclick="playTrack(${i})" id="mtrack-${i}">
+          <div style="width:38px;height:38px;border-radius:8px;flex-shrink:0;overflow:hidden;background:linear-gradient(135deg,${t.color[0]},${t.color[1]})">
+            <img src="${t.cover}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.title}</div>
+            <div style="font-size:10px;color:var(--text-dim)">${t.artist}</div>
+          </div>
+          <span id="mtrack-dur-${i}" style="font-size:11px;color:var(--text-dim);flex-shrink:0">—:——</span>
+        </div>`).join('')}
     </div>
   </div>`;
 }
-function initMusic() {}
+
+let _musicShuffle = false, _musicRepeat = false;
+
+function initMusic() {
+  // Pre-load duration for each track
+  musicTracks.forEach((t, i) => {
+    if (t.src) {
+      const a = new Audio();
+      a.preload = 'metadata';
+      a.src = t.src;
+      a.onloadedmetadata = () => {
+        t._duration = a.duration;
+        const el = document.getElementById(`mtrack-dur-${i}`);
+        if (el) el.textContent = fmtTime(a.duration);
+        if (i === 0) { const d = document.getElementById('music-dur'); if (d) d.textContent = fmtTime(a.duration); }
+      };
+    }
+  });
+}
+
+function fmtTime(s) {
+  if (!s || isNaN(s)) return '—:——';
+  return Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0');
+}
+
 function toggleMusic() {
-  musicPlaying = !musicPlaying;
-  const art = document.getElementById('music-art');
+  if (_currentAudio && !_currentAudio.paused) {
+    _currentAudio.pause();
+    musicPlaying = false;
+  } else {
+    if (!_currentAudio || _currentAudio.ended) {
+      _loadAndPlay(musicIdx);
+      return;
+    }
+    _currentAudio.play().catch(() => _loadAndPlay(musicIdx));
+    musicPlaying = true;
+  }
   const btn = document.getElementById('music-play');
-  if (art) art.classList.toggle('playing', musicPlaying);
-  if (btn) btn.textContent = musicPlaying ? '⏸' : '▶';
-  if (musicPlaying) {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    stopAudio();
-    const track = musicTracks[musicIdx];
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(220 + track.hue, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.07, audioCtx.currentTime);
-    const osc2 = audioCtx.createOscillator();
-    const gain2 = audioCtx.createGain();
-    osc2.type = 'triangle';
-    osc2.frequency.setValueAtTime(440 + track.hue / 2, audioCtx.currentTime);
-    gain2.gain.setValueAtTime(0.03, audioCtx.currentTime);
-    const lfo = audioCtx.createOscillator();
-    const lfoGain = audioCtx.createGain();
-    lfo.frequency.value = 0.5; lfoGain.gain.value = 30;
-    lfo.connect(lfoGain); lfoGain.connect(osc.frequency); lfo.start();
-    osc2.connect(gain2); gain2.connect(audioCtx.destination); osc2.start();
-    osc.connect(gain); gain.connect(audioCtx.destination); osc.start();
-    window._audioNodes = [osc, osc2, lfo];
-    musicTimer = setInterval(() => {
-      musicProgress = Math.min(100, musicProgress + 100 / 180);
-      const sk = document.getElementById('music-seek'); if (sk) sk.value = musicProgress;
-      const cur = Math.floor(musicProgress / 100 * 180);
-      const cc = document.getElementById('music-cur');
-      if (cc) cc.textContent = Math.floor(cur / 60) + ':' + String(cur % 60).padStart(2, '0');
-      if (musicProgress >= 100) musicNext();
-    }, 1000);
-  } else { stopAudio(); clearInterval(musicTimer); }
+  if (btn) btn.innerHTML = musicPlaying ? '⏸' : '▶';
 }
-function stopAudio() {
-  if (window._audioNodes) window._audioNodes.forEach(n => { try { n.stop(); } catch (e) {} });
-  window._audioNodes = [];
+
+function _loadAndPlay(idx) {
+  if (_currentAudio) { _currentAudio.pause(); _currentAudio.src = ''; }
+  const t = musicTracks[idx];
+  if (!t) return;
+  _currentAudio = new Audio(t.src || t._url || '');
+  _currentAudio.volume = (document.getElementById('music-vol')?.value || 80) / 100;
+  _currentAudio.play().then(() => {
+    musicPlaying = true;
+    const btn = document.getElementById('music-play');
+    if (btn) btn.innerHTML = '⏸';
+  }).catch(err => {
+    showNotif('🎵','Music','Could not load audio — try adding your own MP3');
+    musicPlaying = false;
+  });
+  _currentAudio.ontimeupdate = () => {
+    if (!_currentAudio.duration) return;
+    const p = (_currentAudio.currentTime / _currentAudio.duration) * 100;
+    const sk = document.getElementById('music-seek');
+    const cc = document.getElementById('music-cur');
+    const cd = document.getElementById('music-dur');
+    if (sk) sk.value = p;
+    if (cc) cc.textContent = fmtTime(_currentAudio.currentTime);
+    if (cd) cd.textContent = fmtTime(_currentAudio.duration);
+  };
+  _currentAudio.onended = () => {
+    if (_musicRepeat) { _currentAudio.currentTime=0; _currentAudio.play(); return; }
+    if (_musicShuffle) { musicIdx = Math.floor(Math.random()*musicTracks.length); }
+    else { musicIdx = (musicIdx+1) % musicTracks.length; }
+    _loadAndPlay(musicIdx);
+  };
+  loadTrack(idx);
 }
-function musicSeek(v) { musicProgress = Number(v); }
-function musicNext() { musicProgress = 0; musicIdx = (musicIdx + 1) % musicTracks.length; loadTrack(); if (musicPlaying) { stopAudio(); clearInterval(musicTimer); musicPlaying = false; toggleMusic(); } }
-function musicPrev() { musicProgress = 0; musicIdx = (musicIdx - 1 + musicTracks.length) % musicTracks.length; loadTrack(); }
-function playTrack(i) { musicIdx = i; musicProgress = 0; loadTrack(); if (!musicPlaying) toggleMusic(); }
-function musicShuffle() { musicIdx = Math.floor(Math.random() * musicTracks.length); loadTrack(); }
-function musicRepeat() { musicProgress = 0; }
-function loadTrack() {
-  const t = musicTracks[musicIdx];
-  const art = document.getElementById('music-art');
-  const tl  = document.getElementById('music-title');
-  const al  = document.getElementById('music-artist');
-  if (art) { art.style.background = `linear-gradient(135deg,hsl(${t.hue},70%,45%),hsl(${t.hue+50},70%,60%))`; art.textContent = t.emoji; }
-  if (tl) tl.textContent = t.title;
-  if (al) al.textContent = t.artist;
-  document.querySelectorAll('.music-track').forEach((el, i) => el.classList.toggle('active', i === musicIdx));
+
+function musicSeek(v) {
+  if (_currentAudio) _currentAudio.currentTime = (_currentAudio.duration || 0) * v / 100;
+}
+function musicSetVol(v) { if (_currentAudio) _currentAudio.volume = v/100; }
+function musicNext() {
+  musicIdx = _musicShuffle ? Math.floor(Math.random()*musicTracks.length) : (musicIdx+1) % musicTracks.length;
+  _loadAndPlay(musicIdx);
+}
+function musicPrev() {
+  if (_currentAudio && _currentAudio.currentTime > 3) { _currentAudio.currentTime=0; return; }
+  musicIdx = (musicIdx-1+musicTracks.length) % musicTracks.length;
+  _loadAndPlay(musicIdx);
+}
+function playTrack(i) { musicIdx=i; _loadAndPlay(i); }
+function musicToggleShuffle() {
+  _musicShuffle = !_musicShuffle;
+  const btn = document.getElementById('music-shuffle-btn');
+  if (btn) btn.style.opacity = _musicShuffle ? '1' : '.5';
+}
+function musicToggleRepeat() {
+  _musicRepeat = !_musicRepeat;
+  const btn = document.getElementById('music-repeat-btn');
+  if (btn) btn.style.opacity = _musicRepeat ? '1' : '.5';
+}
+function loadTrack(idx) {
+  const t = musicTracks[idx ?? musicIdx];
+  if (!t) return;
+  const art   = document.getElementById('music-art');
+  const artImg= document.getElementById('music-art-img');
+  const tl    = document.getElementById('music-title');
+  const al    = document.getElementById('music-artist');
+  if (art)    art.style.background = `linear-gradient(135deg,${t.color[0]},${t.color[1]})`;
+  if (artImg) { artImg.src = t.cover; artImg.style.display='block'; }
+  if (tl)     tl.textContent = t.title;
+  if (al)     al.textContent = t.artist;
+  document.querySelectorAll('.music-track').forEach((el,i) => el.classList.toggle('active', i===(idx??musicIdx)));
 }
 function loadMusicFile(input) {
   const files = Array.from(input.files); if (!files.length) return;
   files.forEach(file => {
     const url = URL.createObjectURL(file);
-    const audio = new Audio(url);
-    const idx = musicTracks.push({ title:file.name.replace(/\.[^.]+$/, ''), artist:'Local File', emoji:'🎵', hue:Math.floor(Math.random()*360), _audio:audio }) - 1;
+    const cover = 'https://picsum.photos/seed/' + Math.random().toFixed(4).slice(2) + '/300/300';
+    const col = ['#'+Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0'), '#'+Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0')];
+    const idx = musicTracks.push({ title:file.name.replace(/\.[^.]+$/,''), artist:'Local File', cover, src:url, _url:url, color:col }) - 1;
     const list = document.getElementById('music-list');
     if (list) {
       const div = document.createElement('div');
       div.className = 'music-track';
-      div.innerHTML = `<span style="font-size:16px">🎵</span>${musicTracks[idx].title}<span style="margin-left:auto;color:var(--text-dim);font-size:11px">MP3</span>`;
-      div.onclick = () => playLocalTrack(idx);
+      div.id = `mtrack-${idx}`;
+      div.innerHTML = `<div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,${col[0]},${col[1]});flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${musicTracks[idx].title}</div><div style="font-size:10px;color:var(--text-dim)">Local</div></div><span style="font-size:11px;color:var(--text-dim)">MP3</span>`;
+      div.onclick = () => playTrack(idx);
       list.appendChild(div);
     }
   });
-  showNotif('🎵', 'Music Loaded', files.length + ' file(s) added');
-}
-function playLocalTrack(idx) {
-  stopAudio(); if (musicTimer) clearInterval(musicTimer);
-  const t = musicTracks[idx]; if (!t._audio) return;
-  musicIdx = idx; loadTrack();
-  const btn = document.getElementById('music-play');
-  const art = document.getElementById('music-art');
-  musicPlaying = true; if (btn) btn.textContent = '⏸'; if (art) art.classList.add('playing');
-  t._audio.play();
-  t._audio.ontimeupdate = () => {
-    if (!t._audio.duration) return;
-    const p = (t._audio.currentTime / t._audio.duration) * 100;
-    musicProgress = p;
-    const sk = document.getElementById('music-seek'); if (sk) sk.value = p;
-    const cur = Math.floor(t._audio.currentTime);
-    const cc = document.getElementById('music-cur'); if (cc) cc.textContent = Math.floor(cur/60) + ':' + String(cur%60).padStart(2,'0');
-  };
-  t._audio.onended = () => musicNext();
+  showNotif('🎵','Music',files.length + ' track(s) added');
 }
 
 // ─── YOUTUBE ────────────────────────────────────────────
